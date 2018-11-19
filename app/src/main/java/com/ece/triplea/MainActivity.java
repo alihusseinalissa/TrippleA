@@ -1,4 +1,4 @@
-package com.ece.tripplea;
+package com.ece.triplea;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;

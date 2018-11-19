@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ChildActivity">
+
+    <LinearLayout
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_centerInParent="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_centerInParent="true"
+                android:src="@drawable/circle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <com.agrawalsuneet.loaderspack.loaders.MultipleRippleLoader
+                android:id="@+id/ripple_layout"
+                android:layout_centerInParent="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:multipleripple_animDuration="6000"
+                app:multipleripple_circleColor="@color/colorPrimary"
+                app:multipleripple_circleInitialRadius="50dp"
+                app:multipleripple_fromAlpha="0.8"
+                app:multipleripple_interpolator="@android:anim/decelerate_interpolator"
+                app:multipleripple_noOfRipples="3"
+                app:multipleripple_toAplha="0" />
+
+            <ImageView
+                android:id="@+id/error_image"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/icons8_location_96px" />
+
+        </RelativeLayout>
+
+        <TextView
+            android:textAlignment="center"
+            android:text="Tracking your location"
+            android:textSize="30sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:textAlignment="center"
+            android:text="Your location is being tracked by your parent\nPlease don\'t close this screen."
+            android:textSize="18sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+
+</RelativeLayout>

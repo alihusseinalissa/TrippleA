@@ -1,4 +1,4 @@
-package com.ece.tripplea;
+package com.ece.triplea;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -11,15 +11,19 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkResponse;
-import com.android.volley.ParseError;
+import com.agrawalsuneet.loaderspack.loaders.MultipleRippleLoader;
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -32,11 +36,6 @@ import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
-
-import java.io.UnsupportedEncodingException;
-import java.util.Map;
 
 public class ChildActivity extends AppCompatActivity {
 
@@ -44,11 +43,24 @@ public class ChildActivity extends AppCompatActivity {
     TextView tv;
     LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback;
+    MultipleRippleLoader rippleLoader;
+    ImageView errorImage;
+    ViewFlipper view_flipper;
+    final static int STATE_TRACKING = 0;
+    final static int STATE_ERROR = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_child);
+
+        view_flipper = (ViewFlipper)findViewById(R.id.view_flipper);
+        View include1 = findViewById(R.id.uploading_layout);
+        rippleLoader = include1.findViewById(R.id.ripple_layout);
+        View include2 = findViewById(R.id.uploading_error_layout);
+        errorImage = include2.findViewById(R.id.error_image);
+        tv = findViewById(R.id.textView);
+        tv.setVisibility(View.GONE);
 
         createLocationRequest();
 
@@ -58,7 +70,7 @@ public class ChildActivity extends AppCompatActivity {
                 for (Location location : locationResult.getLocations()) {
                     // Update UI with location data
                     // ...
-                    tv.setText(location.getLatitude() + ", " + location.getLongitude());
+//                    tv.setText(location.getLatitude() + ", " + location.getLongitude());
 //                    Toast.makeText(ChildActivity.this, "2", Toast.LENGTH_SHORT).show();
                     pushToDatabase(location);
                 }
@@ -67,7 +79,7 @@ public class ChildActivity extends AppCompatActivity {
 
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        tv = findViewById(R.id.textView);
+
 
         if (//ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
             //    != PackageManager.PERMISSION_GRANTED ||
@@ -102,10 +114,53 @@ public class ChildActivity extends AppCompatActivity {
         });
 
 
+//        Switch trackingServiceSwitch = findViewById(R.id.tracking_service_switch);
+//        trackingServiceSwitch.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (((Switch)v).isChecked()){
+//
+//                }
+//                else {
+//
+//                }
+//            }
+//        });
+
+
     }
 
     private void pushToDatabase(Location location) {
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = getString(R.string.base_url) +
+                getString(R.string.ulr_location_add)
+                + "?child_id=" + "1"
+                + "&family_id=" + "1"
+                + "&location_lat=" + location.getLatitude()
+                + "&location_lng=" + location.getLongitude();
 
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        tv.append("\n" + "Response is: "+ response);
+                        changeState(STATE_TRACKING);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                changeState(STATE_ERROR);
+            }
+        });
+
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+    }
+
+    private void changeState(int newState) {
+        view_flipper.setDisplayedChild(newState);
     }
 
 //    public class GsonRequest<T> extends Request<T> {
@@ -190,7 +245,7 @@ public class ChildActivity extends AppCompatActivity {
                                 if (location != null) {
                                     // Logic to handle location object
                                     tv.setText(location.getLatitude() + ", " + location.getLongitude());
-                                    Toast.makeText(ChildActivity.this, "1", Toast.LENGTH_SHORT).show();
+//                                    Toast.makeText(ChildActivity.this, "1", Toast.LENGTH_SHORT).show();
                                 }
                             }
                         });

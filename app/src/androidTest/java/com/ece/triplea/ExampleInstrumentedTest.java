@@ -1,4 +1,4 @@
-package com.ece.tripplea;
+package com.ece.triplea;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

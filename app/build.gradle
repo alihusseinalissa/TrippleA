@@ -4,7 +4,7 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.ece.tripplea"
-        minSdkVersion 15
+        minSdkVersion 17
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -29,4 +29,7 @@ dependencies {
     implementation 'com.android.volley:volley:1.1.1'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+
+    implementation 'com.github.Tripl3Dev:PrettyStateView:2.2.1' //state view
+    implementation 'com.agrawalsuneet.androidlibs:loaderspack:1.2' //loader view
 }

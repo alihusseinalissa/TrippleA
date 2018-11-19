@@ -1,4 +1,4 @@
-package com.ece.tripplea;
+package com.ece.triplea;
 
 import org.junit.Test;
 

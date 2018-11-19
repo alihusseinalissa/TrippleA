@@ -1,4 +1,7 @@
 <resources>
-    <string name="app_name">TrippleA</string>
+    <string name="app_name">TripleA</string>
     <string name="title_activity_maps">Map</string>
+    <string name="base_url">http://superman15547-001-site1.ctempurl.com/</string>
+    <string name="ulr_location_add">LocationAdd.php</string>
+    <string name="ulr_location_get">LocationGet.php</string>
 </resources>
