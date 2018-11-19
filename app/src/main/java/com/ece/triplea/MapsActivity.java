@@ -64,7 +64,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(MapsActivity.this, "error", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(MapsActivity.this, "error", Toast.LENGTH_SHORT).show();
+                getLatestLocation(1);
             }
         });
 
