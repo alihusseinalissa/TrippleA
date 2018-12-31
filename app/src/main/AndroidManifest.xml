@@ -41,6 +41,20 @@
             android:label="@string/title_activity_maps" />
         <activity android:name="com.ece.triplea.ChildActivity" />
 
+        <service
+            android:name="com.ece.triplea.LocationSenderService"
+            android:exported="true"
+            android:process=":remote"
+            android:enabled="true" >
+        </service>
+
+        <receiver
+            android:name="com.ece.triplea.LocationSenderBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:label="RestartServiceWhenStopped">
+        </receiver>
+
     </application>
 
 </manifest>
