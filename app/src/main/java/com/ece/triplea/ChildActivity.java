@@ -1,20 +1,21 @@
 package com.ece.triplea;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
@@ -23,18 +24,20 @@ import com.agrawalsuneet.loaderspack.loaders.MultipleRippleLoader;
 
 public class ChildActivity extends AppCompatActivity {
 
-    TextView tv;
+    Switch serviceSwitch;
     MultipleRippleLoader rippleLoader;
     ImageView errorImage;
     ViewFlipper view_flipper;
     final static int STATE_TRACKING = 0;
     final static int STATE_ERROR = 1;
     BroadcastReceiver broadcastReceiver;
+    SharedPreferences pref;
 
     Intent mServiceIntent;
     private LocationSenderService mService;
 
     Context ctx;
+
     public Context getCtx() {
         return ctx;
     }
@@ -43,32 +46,24 @@ public class ChildActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_child);
-
-        view_flipper = (ViewFlipper)findViewById(R.id.view_flipper);
+        pref = getSharedPreferences("pref", MODE_PRIVATE);
+        view_flipper = (ViewFlipper) findViewById(R.id.view_flipper);
         View include1 = findViewById(R.id.uploading_layout);
         rippleLoader = include1.findViewById(R.id.ripple_layout);
         View include2 = findViewById(R.id.uploading_error_layout);
         errorImage = include2.findViewById(R.id.error_image);
-        tv = findViewById(R.id.textView);
-//        tv.setVisibility(View.GONE);
+        serviceSwitch = findViewById(R.id.serviceSwitch);
 
         ctx = this;
         mService = new LocationSenderService(getCtx());
         mServiceIntent = new Intent(getCtx(), mService.getClass());
-        if (!isMyServiceRunning(mService.getClass())) {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                startForegroundService(mServiceIntent);
-//            } else {
-                startService(mServiceIntent);
-//            }
-        }
 
-
+        serviceSwitch.setChecked(isMyServiceRunning(mService.getClass()));
 
         broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-
+                Toast.makeText(context, "Broadcast Received!!", Toast.LENGTH_SHORT).show();
             }
         };
 
@@ -76,7 +71,6 @@ public class ChildActivity extends AppCompatActivity {
         intentFilter.addAction("AAACTION");
         intentFilter.setPriority(100);
         registerReceiver(broadcastReceiver, intentFilter);
-
 
 
         if (//ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
@@ -104,11 +98,21 @@ public class ChildActivity extends AppCompatActivity {
         }
 
 
-        tv.setOnClickListener(new View.OnClickListener() {
+        serviceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View view) {
-                mServiceIntent.putExtra("isTurnedOn", false);
-                stopService(mServiceIntent);
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                SharedPreferences.Editor editor = pref.edit();
+                editor.putBoolean("serviceSwitch", isChecked);
+                editor.commit();
+                if (isChecked) {
+                    if (!isMyServiceRunning(mService.getClass())) {
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                       startForegroundService(mServiceIntent);
+//                       } else {
+                        startService(mServiceIntent);
+//                    }
+                    }
+                } else stopService(mServiceIntent);
             }
         });
 
@@ -127,21 +131,22 @@ public class ChildActivity extends AppCompatActivity {
 //        });
 
 
-        Intent broadcastIntent = new Intent(this, LocationSenderBroadcastReceiver.class);
-        broadcastIntent.putExtra("isTurnedOn", true);
-
-        sendBroadcast(broadcastIntent);
+//        Intent broadcastIntent = new Intent(this, LocationSenderBroadcastReceiver.class);
+//        SharedPreferences.Editor editor = pref.edit();
+//        editor.putBoolean("serviceSwitch", false);
+//        editor.commit();
+//        sendBroadcast(broadcastIntent);
     }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
             if (serviceClass.getName().equals(service.service.getClassName())) {
-                Log.i ("isMyServiceRunning?", true+"");
+                Log.i("isMyServiceRunning?", true + "");
                 return true;
             }
         }
-        Log.i ("isMyServiceRunning?", false+"");
+        Log.i("isMyServiceRunning?", false + "");
         return false;
     }
 
@@ -206,7 +211,6 @@ public class ChildActivity extends AppCompatActivity {
 //    }
 
 
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -218,8 +222,6 @@ public class ChildActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
     }
-
-
 
 
 }

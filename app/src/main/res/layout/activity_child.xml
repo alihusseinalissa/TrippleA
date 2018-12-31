@@ -6,13 +6,21 @@
     android:layout_height="match_parent"
     tools:context=".ChildActivity">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TextView"
-        tools:layout_editor_absoluteX="146dp"
-        tools:layout_editor_absoluteY="149dp" />
+    <RelativeLayout
+        android:background="#dedede"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Switch
+            android:padding="16dp"
+            android:textSize="20sp"
+            android:id="@+id/serviceSwitch"
+            android:text="Tracking"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </RelativeLayout>
+
 
     <!--<Switch-->
         <!--android:id="@+id/tracking_service_switch"-->

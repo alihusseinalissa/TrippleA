@@ -5,8 +5,10 @@ import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -46,11 +48,13 @@ import static android.support.v4.app.NotificationCompat.GROUP_ALERT_SUMMARY;
 
 public class LocationSenderService extends Service {
 
+    RequestQueue queue;
     LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback;
     private FusedLocationProviderClient mFusedLocationClient;
     Context mContext;
     private Intent mIntent;
+    boolean serviceSwitch;
 
     public LocationSenderService(Context applicationContext) {
         super();
@@ -69,7 +73,7 @@ public class LocationSenderService extends Service {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, "UploadLocations")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle("Uploading Your Location")
-                .setContentText("Your location is being uploaded to the database...")
+                .setContentText("Your location is being uploaded to the database")
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
                 .setGroupAlertBehavior(GROUP_ALERT_SUMMARY)
@@ -125,8 +129,6 @@ public class LocationSenderService extends Service {
         super.onDestroy();
         Log.i("EXIT", "ondestroy!");
         Intent broadcastIntent = new Intent(this, LocationSenderBroadcastReceiver.class);
-        boolean isTurnedOn = mIntent.getBooleanExtra("isTurnedOn", false);
-        broadcastIntent.putExtra("isTurnedOn", isTurnedOn);
 
         sendBroadcast(broadcastIntent);
         stopLocationUpdates();
@@ -245,7 +247,7 @@ public class LocationSenderService extends Service {
     }
 
     private void pushToDatabase(Location location) {
-        RequestQueue queue = Volley.newRequestQueue(this);
+        if (queue == null) queue = Volley.newRequestQueue(this);
         String url = getString(R.string.base_url) +
                 getString(R.string.ulr_location_add)
                 + "?child_id=" + "1"

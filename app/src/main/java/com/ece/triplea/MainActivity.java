@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Upload Locations";
             String description = "This notification must be shown always to ensure that the location" +
-                    "is been uploaded to the database";
+                    "is being uploaded to the database";
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel("UploadLocations", name, importance);
             channel.setDescription(description);

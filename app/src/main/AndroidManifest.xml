@@ -44,9 +44,15 @@
         <service
             android:name="com.ece.triplea.LocationSenderService"
             android:exported="true"
-            android:process=":remote"
             android:enabled="true" >
         </service>
+
+        <receiver
+            android:name="com.ece.triplea.LocationSenderBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:label="RestartServiceWhenStopped">
+        </receiver>
 
         <receiver
             android:name="com.ece.triplea.LocationSenderBroadcastReceiver"
