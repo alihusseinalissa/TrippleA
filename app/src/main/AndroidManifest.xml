@@ -9,6 +9,7 @@
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -17,7 +18,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
         android:theme="@style/AppTheme">
-        <activity android:name="com.ece.triplea.MainActivity">
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -37,30 +38,25 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name="com.ece.triplea.MapsActivity"
+            android:name=".MapsActivity"
             android:label="@string/title_activity_maps" />
-        <activity android:name="com.ece.triplea.ChildActivity" />
+        <activity android:name=".ChildActivity" />
 
         <service
-            android:name="com.ece.triplea.LocationSenderService"
-            android:exported="true"
-            android:enabled="true" >
-        </service>
+            android:name=".LocationSenderService"
+            android:enabled="true"
+            android:exported="true"></service>
 
         <receiver
-            android:name="com.ece.triplea.LocationSenderBroadcastReceiver"
+            android:name=".LocationSenderBroadcastReceiver"
             android:enabled="true"
             android:exported="true"
-            android:label="RestartServiceWhenStopped">
-        </receiver>
-
+            android:label="RestartServiceWhenStopped"></receiver>
         <receiver
-            android:name="com.ece.triplea.LocationSenderBroadcastReceiver"
+            android:name=".LocationSenderBroadcastReceiver"
             android:enabled="true"
             android:exported="true"
-            android:label="RestartServiceWhenStopped">
-        </receiver>
-
+            android:label="RestartServiceWhenStopped"></receiver>
     </application>
 
 </manifest>

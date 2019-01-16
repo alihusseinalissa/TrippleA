@@ -71,7 +71,7 @@ public class LocationSenderService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, "UploadLocations")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.icons8_location_96px)
                 .setContentTitle("Uploading Your Location")
                 .setContentText("Your location is being uploaded to the database")
                 .setContentIntent(pendingIntent)
