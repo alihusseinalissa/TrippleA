@@ -4,4 +4,7 @@
     <string name="base_url">http://ahmadsite-001-site1.btempurl.com/</string>
     <string name="ulr_location_add">LocationAdd.php</string>
     <string name="ulr_location_get">LocationGet.php</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
