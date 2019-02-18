@@ -10,8 +10,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.ece.triplea.R;
 
 /**
@@ -33,6 +40,13 @@ public class SignUpFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+
+    RequestQueue queue;
+
+    Button buCreateAccount;
+    EditText txtName, txtPass, txtEmail, txtGender, txtPhone;
+
+
 
     public SignUpFragment() {
         // Required empty public constructor
@@ -63,6 +77,7 @@ public class SignUpFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        queue = Volley.newRequestQueue(getContext());
     }
 
     @Override
@@ -83,11 +98,46 @@ public class SignUpFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Button createAccount = getView().findViewById(R.id.btnCreateAccount);
-        createAccount.setOnClickListener(new View.OnClickListener() {
+        buCreateAccount = getView().findViewById(R.id.btnCreateAccount);
+        buCreateAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(), "Create Account", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), "Create Account", Toast.LENGTH_SHORT).show();
+
+                txtName = getView().findViewById(R.id.signup_name);
+                        txtPass = getView().findViewById(R.id.signup_password);
+//                txtEmail = getView().findViewById(R.id.signup_);
+//                        txtGender = getView().findViewById(R.id.signup_gender);
+                txtPhone = getView().findViewById(R.id.signup_phone);
+/*
+                String name
+                String pass
+                String phone
+                String url ="http://192.168.0.107/TripleA/UserAdd.php?"+
+                        "name" +
+                        "pass" +
+                        "email" +
+                        "gender" +
+                        "phone" +
+                        ;
+*/
+// Request a string response from the provided URL.
+                /*StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                // Display the first 500 characters of the response string.
+                                //mTextView.setText("Response is: "+ response.substring(0,500));
+                            }
+                        }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+//                        mTextView.setText("That didn't work!");
+                    }
+                });*/
+
+// Add the request to the RequestQueue.
+                //queue.add(stringRequest);
             }
         });
     }

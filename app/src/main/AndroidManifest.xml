@@ -55,8 +55,10 @@
             android:label="RestartServiceWhenStopped" />
 
         <activity android:name=".LoginActivity"
-            android:theme="@style/AppThemeNoActionBar"
-            >
+            android:theme="@style/AppThemeNoActionBar">
+
+        </activity>
+        <activity android:name=".SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
