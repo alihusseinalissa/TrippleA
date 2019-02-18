@@ -18,9 +18,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
-
-        </activity>
+        <activity android:name=".MainActivity"></activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -54,10 +52,9 @@
             android:exported="true"
             android:label="RestartServiceWhenStopped" />
 
-        <activity android:name=".LoginActivity"
-            android:theme="@style/AppThemeNoActionBar">
-
-        </activity>
+        <activity
+            android:name=".LoginActivity"
+            android:theme="@style/AppThemeNoActionBar"></activity>
         <activity android:name=".SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -65,6 +62,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ManageChildrenActivity"
+            android:label="@string/title_activity_manage_children"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

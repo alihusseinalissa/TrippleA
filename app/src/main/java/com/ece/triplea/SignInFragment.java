@@ -1,6 +1,7 @@
 package com.ece.triplea;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -118,7 +119,8 @@ public class SignInFragment extends Fragment {
         createAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(), "Login", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getContext(), ManageChildrenActivity.class);
+                startActivity(intent);
             }
         });
     }
