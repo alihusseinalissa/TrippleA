@@ -2,6 +2,7 @@ package com.ece.triplea;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -11,9 +12,25 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageRequest;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.ece.triplea.R;
+import com.google.gson.JsonArray;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -23,7 +40,7 @@ import com.ece.triplea.R;
  * Use the {@link SignInFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SignInFragment extends Fragment {
+public class SignInFragment extends Fragment implements Response.Listener<JSONArray>, Response.ErrorListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -34,6 +51,12 @@ public class SignInFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+
+    EditText txtPhoneNumber, txtPassword;
+    Button btnLogin;
+    ProgressBar signinProgress;
+
+    RequestQueue mQueue;
 
     public SignInFragment() {
         // Required empty public constructor
@@ -60,6 +83,7 @@ public class SignInFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mQueue = Volley.newRequestQueue(getContext());
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
@@ -108,20 +132,65 @@ public class SignInFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
+
+
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
-    }
 
+    }
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Button createAccount = getView().findViewById(R.id.btnLogin);
-        createAccount.setOnClickListener(new View.OnClickListener() {
+        txtPhoneNumber = getView().findViewById(R.id.signin_phone);
+        txtPassword = getView().findViewById(R.id.signin_password);
+        signinProgress = getView().findViewById(R.id.signin_progress);
+        btnLogin = getView().findViewById(R.id.btnLogin);
+        btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getContext(), ManageChildrenActivity.class);
-                startActivity(intent);
+                login();
+
             }
         });
+    }
+    private void login() {
+        setLoading(true);
+        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, "http://192.168.0.102/TripleA/login.php", null, this, this);
+        mQueue.add(request);
+
+    }
+
+    @Override
+    public void onResponse(JSONArray response) {
+        setLoading(false);
+        boolean verified = false;
+        long userId = -1;
+        try {
+            JSONArray jsonArray = response.getJSONArray(0);
+            JSONObject jsonObject = jsonArray.getJSONObject(0);
+            verified = jsonObject.getBoolean("verified");
+            userId = jsonObject.getLong("userId");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            // Show Error
+        }
+        if (verified && userId >= 0){
+            Intent intent = new Intent(getContext(), ManageChildrenActivity.class);
+            intent.putExtra("userId", userId);
+            startActivity(intent);
+        }
+    }
+
+    @Override
+    public void onErrorResponse(VolleyError error) {
+        setLoading(false);
+
+    }
+
+
+
+    void setLoading(boolean loading){
+        btnLogin.setEnabled(!loading);
+        signinProgress.setVisibility(loading ? View.VISIBLE : View.GONE);
     }
 }

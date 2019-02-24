@@ -12,16 +12,34 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.ViewFlipper;
 
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class ManageChildrenActivity extends AppCompatActivity {
+public class ManageChildrenActivity extends AppCompatActivity implements Response.Listener<JSONArray>, Response.ErrorListener {
 
     final ArrayList<Child> mChildren = new ArrayList<>();
     ListView mListView;
     ChildrenListAdapter mAdapter;
     TextView txtNoChildren;
+    ViewFlipper viewFlipper;
+    RequestQueue volleyQueue;
+    private int PAGE_LOADING = 0;
+    private int PAGE_ERROR = 1;
+    private int PAGE_NO_CHILDREN = 2;
+    private int PAGE_LIST = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,17 +54,19 @@ public class ManageChildrenActivity extends AppCompatActivity {
             public void onClick(View view) {
                 mChildren.add(new Child(0, "ali", "123"));
                 mAdapter.notifyDataSetChanged();
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+
             }
         });
+
+        viewFlipper = findViewById(R.id.manage_children_flipper);
+        volleyQueue = Volley.newRequestQueue(this);
 
 
 //        mChildren.add(new Child(0, "ali", "123"));
 //        mChildren.add(new Child(1, "ahmed", "456"));
 //        mChildren.add(new Child(2, "mohammad", "789"));
 
-        txtNoChildren = findViewById(R.id.txtNoChildren);
+
 
         mAdapter = new ChildrenListAdapter(mChildren);
         mListView = findViewById(R.id.listChildren);
@@ -54,7 +74,53 @@ public class ManageChildrenActivity extends AppCompatActivity {
         mAdapter.notifyDataSetChanged();
 
 
+        makeRequest();
 
+    }
+
+    private void makeRequest() {
+        viewFlipper.setDisplayedChild(PAGE_LOADING);
+        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, "http://192.168.0.102/TripleA/ChildrenGet.php", null, this, this);
+        volleyQueue.add(request);
+
+    }
+
+    @Override
+    public void onResponse(JSONArray response) {
+        try {
+            JSONArray jsonArray = response.getJSONArray(0);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                long childId = jsonObject.getLong("child_id");
+                String childName = jsonObject.getString("child_name");
+                String childPhone = jsonObject.getString("child_phone");
+                mChildren.add(new Child(childId, childName, childPhone));
+
+            }
+            mAdapter.notifyDataSetChanged();
+            viewFlipper.setDisplayedChild(PAGE_LIST);
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            showError();
+        }
+    }
+
+    private void showError() {
+        viewFlipper.setDisplayedChild(PAGE_ERROR);
+        Snackbar.make(mListView, "Error Getting Children", Snackbar.LENGTH_LONG)
+                .setAction("Try Again", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        makeRequest();
+                    }
+                }).show();
+    }
+
+    @Override
+    public void onErrorResponse(VolleyError error) {
+        showError();
     }
 
     public class ChildrenListAdapter extends BaseAdapter {
@@ -98,11 +164,9 @@ public class ManageChildrenActivity extends AppCompatActivity {
         public void notifyDataSetChanged() {
             super.notifyDataSetChanged();
             if (mChildren.size()<=0) {
-                txtNoChildren.setVisibility(View.VISIBLE);
-                mListView.setVisibility(View.GONE);
+                viewFlipper.setDisplayedChild(PAGE_NO_CHILDREN);
             } else {
-                txtNoChildren.setVisibility(View.GONE);
-                mListView.setVisibility(View.VISIBLE);
+                viewFlipper.setDisplayedChild(PAGE_LIST);
             }
         }
     }
