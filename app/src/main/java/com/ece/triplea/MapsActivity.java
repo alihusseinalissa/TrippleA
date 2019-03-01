@@ -1,5 +1,7 @@
 package com.ece.triplea;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +28,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
     RequestQueue volleyQueue;
+    private long userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,12 +39,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         volleyQueue = Volley.newRequestQueue(this);
+        SharedPreferences sharedPreferences = getSharedPreferences("GLOBAL", Context.MODE_PRIVATE);
+        userId = sharedPreferences.getLong("user_id", -1);
     }
 
-    private void getLatestLocation(int childId) {
+    private void getLatestLocation() {
         String url = getString(R.string.base_url) +
                 getString(R.string.ulr_location_get)
-                + "?child_id=" + childId;
+                + "?user_id=" + userId;
 
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
@@ -56,7 +61,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             double longitude = jsonObject.getDouble("location_lng");
                             String time = jsonObject.getString("location_time");
                             changeCurrentLocation(latitude, longitude, time);
-                            getLatestLocation(1);
+                            getLatestLocation();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -65,7 +70,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onErrorResponse(VolleyError error) {
 //                Toast.makeText(MapsActivity.this, "error", Toast.LENGTH_SHORT).show();
-                getLatestLocation(1);
+                getLatestLocation();
             }
         });
 
@@ -95,6 +100,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        getLatestLocation(1);
+        getLatestLocation();
     }
 }

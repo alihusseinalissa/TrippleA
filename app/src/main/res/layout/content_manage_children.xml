@@ -12,7 +12,8 @@
     <ViewFlipper
         android:id="@+id/manage_children_flipper"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <ProgressBar
             android:layout_gravity="center"
@@ -52,8 +53,10 @@
 
     </ViewFlipper>
 
-
-
-
+    <Button
+        android:id="@+id/btnNext"
+        android:text="next"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

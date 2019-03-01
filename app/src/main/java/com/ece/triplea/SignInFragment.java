@@ -2,11 +2,13 @@ package com.ece.triplea;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -153,10 +155,32 @@ public class SignInFragment extends Fragment implements Response.Listener<JSONAr
             }
         });
     }
+
+    private void showSnackbar(String text){
+        Snackbar.make(getView(), text, Snackbar.LENGTH_LONG)
+                .setAction(null, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                    }
+                }).show();
+    }
+
     private void login() {
         setLoading(true);
-        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, "http://192.168.0.102/TripleA/login.php", null, this, this);
-        mQueue.add(request);
+        String phone = txtPhoneNumber.getText().toString();
+        String pass = txtPassword.getText().toString();
+
+        if (phone.equals("") || pass.equals("")) {
+            showSnackbar("Phone number or password can't be empty");
+            setLoading(false);
+        } else {
+            String url = getString(R.string.local_ip) + "UserGetId.php?" +
+                    "phone=" + phone +
+                    "&pass=" + pass;
+            JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null, this, this);
+            mQueue.add(request);
+        }
 
     }
 
@@ -165,25 +189,33 @@ public class SignInFragment extends Fragment implements Response.Listener<JSONAr
         setLoading(false);
         boolean verified = false;
         long userId = -1;
+        String msg;
         try {
-            JSONArray jsonArray = response.getJSONArray(0);
-            JSONObject jsonObject = jsonArray.getJSONObject(0);
+            //JSONArray jsonArray = response.getJSONArray(0);
+            JSONObject jsonObject = response.getJSONObject(0);
             verified = jsonObject.getBoolean("verified");
-            userId = jsonObject.getLong("userId");
+            if (verified) userId = jsonObject.getLong("user_id");
+            msg = jsonObject.getString("msg");
         } catch (JSONException e) {
             e.printStackTrace();
-            // Show Error
+            showSnackbar("Login Error");
+            return;
         }
         if (verified && userId >= 0){
+            SharedPreferences sharedPreferences = getActivity().getSharedPreferences("GLOBAL", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putLong("user_id", userId);
             Intent intent = new Intent(getContext(), ManageChildrenActivity.class);
-            intent.putExtra("userId", userId);
             startActivity(intent);
+        } else {
+            showSnackbar(msg);
         }
     }
 
     @Override
     public void onErrorResponse(VolleyError error) {
         setLoading(false);
+        showSnackbar("Please check your internet connection!");
 
     }
 

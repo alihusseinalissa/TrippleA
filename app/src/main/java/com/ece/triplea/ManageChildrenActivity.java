@@ -1,5 +1,6 @@
 package com.ece.triplea;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -9,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -28,7 +30,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class ManageChildrenActivity extends AppCompatActivity implements Response.Listener<JSONArray>, Response.ErrorListener {
+public class ManageChildrenActivity extends AppCompatActivity implements Response.Listener<JSONArray>, Response.ErrorListener, View.OnClickListener {
 
     final ArrayList<Child> mChildren = new ArrayList<>();
     ListView mListView;
@@ -36,6 +38,7 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
     TextView txtNoChildren;
     ViewFlipper viewFlipper;
     RequestQueue volleyQueue;
+    Button btnNext;
     private int PAGE_LOADING = 0;
     private int PAGE_ERROR = 1;
     private int PAGE_NO_CHILDREN = 2;
@@ -76,11 +79,14 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
 
         makeRequest();
 
+        btnNext = findViewById(R.id.btnNext);
+        btnNext.setOnClickListener(this);
+
     }
 
     private void makeRequest() {
         viewFlipper.setDisplayedChild(PAGE_LOADING);
-        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, "http://192.168.0.102/TripleA/ChildrenGet.php", null, this, this);
+        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, getString(R.string.local_ip) + "ChildrenGet.php", null, this, this);
         volleyQueue.add(request);
 
     }
@@ -121,6 +127,12 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
     @Override
     public void onErrorResponse(VolleyError error) {
         showError();
+    }
+
+    @Override
+    public void onClick(View v) {
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
     }
 
     public class ChildrenListAdapter extends BaseAdapter {
