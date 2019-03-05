@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -109,37 +110,46 @@ public class SignUpFragment extends Fragment {
 //                txtEmail = getView().findViewById(R.id.signup_);
 //                        txtGender = getView().findViewById(R.id.signup_gender);
                 txtPhone = getView().findViewById(R.id.signup_phone);
-/*
-                String name
-                String pass
-                String phone
-                String url ="http://192.168.0.107/TripleA/UserAdd.php?"+
-                        "name" +
-                        "pass" +
-                        "email" +
-                        "gender" +
-                        "phone" +
-                        ;
-*/
+
+                String name = txtName.getText().toString();
+                String pass = txtPass.getText().toString();
+                String phone = txtPhone.getText().toString();
+                String url = getString(R.string.local_ip) + "UserAdd.php?"+
+                        "name=" + name +
+                        "&pass=" + pass +
+                        "&email=" + "" +
+                        "&gender=" + "male" +
+                        "&phone=" + phone;
+
 // Request a string response from the provided URL.
-                /*StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
                                 // Display the first 500 characters of the response string.
-                                //mTextView.setText("Response is: "+ response.substring(0,500));
+                                showSnackbar(response);
                             }
                         }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-//                        mTextView.setText("That didn't work!");
+                        showSnackbar("Please check your internet connection!");
                     }
-                });*/
+                });
 
 // Add the request to the RequestQueue.
-                //queue.add(stringRequest);
+                queue.add(stringRequest);
             }
         });
+    }
+
+    private void showSnackbar(String text){
+        Snackbar.make(getView(), text, Snackbar.LENGTH_LONG)
+                .setAction(null, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                    }
+                }).show();
     }
 
     @Override
