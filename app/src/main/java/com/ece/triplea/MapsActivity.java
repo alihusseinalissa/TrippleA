@@ -5,6 +5,10 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -13,23 +17,32 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.nex3z.togglebuttongroup.MultiSelectToggleGroup;
+import com.nex3z.togglebuttongroup.button.CircularToggle;
+import com.nex3z.togglebuttongroup.button.LabelToggle;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
+import java.util.ArrayList;
+
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.InfoWindowAdapter, MultiSelectToggleGroup.OnCheckedStateChangeListener {
 
     private GoogleMap mMap;
     RequestQueue volleyQueue;
     private long userId;
-
+    ArrayList<MyLocation> mLocations = new ArrayList<>();
+    MultiSelectToggleGroup childrenPanel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,27 +54,39 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         volleyQueue = Volley.newRequestQueue(this);
         SharedPreferences sharedPreferences = getSharedPreferences("GLOBAL", Context.MODE_PRIVATE);
         userId = sharedPreferences.getLong("user_id", -1);
+        childrenPanel = findViewById(R.id.children_panel);
+        childrenPanel.setOnCheckedChangeListener(this);
+
+
     }
 
     private void getLatestLocation() {
         String url = getString(R.string.base_url) +
-                getString(R.string.ulr_location_get)
+                getString(R.string.ulr_location_get_last)
                 + "?user_id=" + userId;
 
         // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         // Display the first 500 characters of the response string.
                         try {
                             JSONArray jsonArray = (new JSONArray(response)).getJSONArray(0);
-                            JSONObject jsonObject = jsonArray.getJSONObject(0);
-                            double latitude =jsonObject.getDouble("location_lat");
-                            double longitude = jsonObject.getDouble("location_lng");
-                            String time = jsonObject.getString("location_time");
-                            changeCurrentLocation(latitude, longitude, time);
-                            getLatestLocation();
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                int locationId = jsonObject.getInt("location_id");
+                                int childId = jsonObject.getInt("childid");
+                                String childName = jsonObject.getString("child_name");
+                                double latitude = jsonObject.getDouble("location_lat");
+                                double longitude = jsonObject.getDouble("location_lng");
+                                String time = jsonObject.getString("location_time");
+                                mLocations.add(new MyLocation(locationId, childId, childName, latitude, longitude, time));
+                                addButton(childId, childName);
+                                updateRealTimeLocations();
+                            }
+
+                            //getLatestLocation();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -70,7 +95,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onErrorResponse(VolleyError error) {
 //                Toast.makeText(MapsActivity.this, "error", Toast.LENGTH_SHORT).show();
-                getLatestLocation();
+                //getLatestLocation();
             }
         });
 
@@ -78,12 +103,31 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         volleyQueue.add(stringRequest);
     }
 
-    private void changeCurrentLocation(double newLatitude, double newLongitude, String newTime) {
+    private void addButton(long childId, String childName) {
+        LabelToggle button = new LabelToggle(this);
+        button.setText(childName);
+        button.setTag(childId);
+        button.setChecked(true);
+        ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        childrenPanel.addView(button, lp);
+    }
+
+    private void updateRealTimeLocations() {
         mMap.clear();
-        LatLng newLocation = new LatLng(newLatitude, newLongitude);
-        MarkerOptions marker = new MarkerOptions().position(newLocation).title("Your child's location" + ": " + newLatitude + ", " + newLongitude);
-        mMap.addMarker(marker).showInfoWindow();
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newLocation, 15));
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (int i = 0; i < mLocations.size(); i++) {
+            double newLatitude = mLocations.get(i).getLatitude();
+            double newLongitude = mLocations.get(i).getLongitude();
+            LatLng newLocation = new LatLng(newLatitude, newLongitude);
+            MarkerOptions marker = new MarkerOptions().position(newLocation)
+                    .title(mLocations.get(i).getChildName() + "'s location" + ": " + newLatitude + ", " + newLongitude)
+                    .snippet("Recorded at: " + mLocations.get(i).getTime());
+            mMap.addMarker(marker).showInfoWindow();
+            builder.include(marker.getPosition());
+        }
+        LatLngBounds bounds = builder.build();
+        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 350));
+//        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newLocation, 15));
     }
 
 
@@ -99,7 +143,34 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        mMap.setInfoWindowAdapter(this);
         getLatestLocation();
+    }
+
+    @Override
+    public View getInfoWindow(Marker marker) {
+//        return null;
+        View view = getLayoutInflater().inflate(R.layout.marker_info_window,null);
+        TextView tv1 = (TextView) view.findViewById(R.id.txtInfo1);
+        TextView tv2 = (TextView) view.findViewById(R.id.txtInfo2);
+
+        tv1.setText(marker.getTitle());
+        tv2.setText(marker.getSnippet());
+
+
+
+        return view;
+    }
+
+    @Override
+    public View getInfoContents(Marker marker) {
+        return null;
+    }
+
+    @Override
+    public void onCheckedStateChanged(MultiSelectToggleGroup group, int checkedId, boolean isChecked) {
+        LabelToggle button = group.findViewById(checkedId);
+
+        Log.e("tag: " + button.getTag().toString(), "name: " + button.getText().toString() + ", " + "checked: " + isChecked);
     }
 }

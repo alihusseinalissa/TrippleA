@@ -26,6 +26,7 @@
                     android:text="Phone Number:" />
 
                 <EditText
+                    android:text="123"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:id="@+id/signin_phone"
@@ -44,6 +45,7 @@
                     android:text="Password" />
 
                 <EditText
+                    android:text="123"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:id="@+id/signin_password"

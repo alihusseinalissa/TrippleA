@@ -175,7 +175,7 @@ public class SignInFragment extends Fragment implements Response.Listener<JSONAr
             showSnackbar("Phone number or password can't be empty");
             setLoading(false);
         } else {
-            String url = getString(R.string.local_ip) + "UserGetId.php?" +
+            String url = getString(R.string.base_url) + "UserGetId.php?" +
                     "phone=" + phone +
                     "&pass=" + pass;
             JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null, this, this);
@@ -205,6 +205,7 @@ public class SignInFragment extends Fragment implements Response.Listener<JSONAr
             SharedPreferences sharedPreferences = getActivity().getSharedPreferences("GLOBAL", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putLong("user_id", userId);
+            editor.apply();
             Intent intent = new Intent(getContext(), ManageChildrenActivity.class);
             startActivity(intent);
         } else {

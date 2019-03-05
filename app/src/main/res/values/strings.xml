@@ -1,13 +1,13 @@
 <resources>
     <string name="app_name">TripleA</string>
     <string name="title_activity_maps">Map</string>
-    <string name="base_url">http://ahmadsite-001-site1.btempurl.com/</string>
+    <string name="base_url">http://ahmadsitee-001-site1.btempurl.com/</string>
     <string name="ulr_location_add">LocationAdd.php</string>
-    <string name="ulr_location_get">LocationGet.php</string>
+    <string name="ulr_location_get_last">GetLastLocations.php</string>
     <string name="ulr_children_get">ChildrenGet.php</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_manage_children">Manage Your Children</string>
-    <string name="local_ip">http://192.168.0.102/TripleA/</string>
+    <string name="local_ip">http://192.168.0.123/TripleA/</string>
 </resources>

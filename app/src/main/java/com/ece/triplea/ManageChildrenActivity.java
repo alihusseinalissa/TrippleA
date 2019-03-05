@@ -55,8 +55,8 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mChildren.add(new Child(0, "ali", "123"));
-                mAdapter.notifyDataSetChanged();
+//                mChildren.add(new Child(0, "ali", "123"));
+//                mAdapter.notifyDataSetChanged();
 
             }
         });
@@ -86,7 +86,7 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
 
     private void makeRequest() {
         viewFlipper.setDisplayedChild(PAGE_LOADING);
-        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, getString(R.string.local_ip) + "ChildrenGet.php", null, this, this);
+        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, getString(R.string.base_url) + "ChildrenGet.php", null, this, this);
         volleyQueue.add(request);
 
     }

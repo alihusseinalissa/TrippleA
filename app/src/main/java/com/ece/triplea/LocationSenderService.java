@@ -211,9 +211,9 @@ public class LocationSenderService extends Service {
                 }
 
                 mFusedLocationClient.getLastLocation()
-                        .addOnSuccessListener((ChildActivity)mContext, new OnSuccessListener<Location>() {
+                        .addOnSuccessListener((ChildActivity)mContext, new OnSuccessListener<MyLocation>() {
                             @Override
-                            public void onSuccess(Location location) {
+                            public void onSuccess(MyLocation location) {
                                 // Got last known location. In some rare situations this can be null.
                                 if (location != null) {
                                     // Logic to handle location object
@@ -229,7 +229,7 @@ public class LocationSenderService extends Service {
             @Override
             public void onFailure(@NonNull Exception e) {
                 if (e instanceof ResolvableApiException) {
-                    // Location settings are not satisfied, but this can be fixed
+                    // MyLocation settings are not satisfied, but this can be fixed
                     // by showing the user a dialog.
                     try {
                         // Show the dialog by calling startResolutionForResult(),
