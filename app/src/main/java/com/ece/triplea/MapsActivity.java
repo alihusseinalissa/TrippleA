@@ -35,6 +35,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.InfoWindowAdapter, MultiSelectToggleGroup.OnCheckedStateChangeListener {
 
@@ -42,7 +44,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     RequestQueue volleyQueue;
     private long userId;
     ArrayList<MyLocation> mLocations = new ArrayList<>();
+    Map<Long, MyLocation> mapLocations = new HashMap<>();
     MultiSelectToggleGroup childrenPanel;
+    ArrayList<Long> trackedChildren = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +66,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void getLatestLocation() {
-        String url = getString(R.string.base_url) +
+        String url = getString(R.string.local_ip) +
                 getString(R.string.ulr_location_get_last)
                 + "?user_id=" + userId;
 
@@ -75,13 +80,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             JSONArray jsonArray = (new JSONArray(response)).getJSONArray(0);
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                int locationId = jsonObject.getInt("location_id");
-                                int childId = jsonObject.getInt("childid");
+                                long locationId = jsonObject.getLong("location_id");
+                                long childId = jsonObject.getLong("childid");
                                 String childName = jsonObject.getString("child_name");
                                 double latitude = jsonObject.getDouble("location_lat");
                                 double longitude = jsonObject.getDouble("location_lng");
                                 String time = jsonObject.getString("location_time");
-                                mLocations.add(new MyLocation(locationId, childId, childName, latitude, longitude, time));
+                                MyLocation location = new MyLocation(locationId, childId, childName, latitude, longitude, time);
+                                mLocations.add(location);
+                                mapLocations.put(childId, location);
                                 addButton(childId, childName);
                                 updateRealTimeLocations();
                             }
@@ -114,20 +121,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void updateRealTimeLocations() {
         mMap.clear();
+        LatLng newLocation = null;
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         for (int i = 0; i < mLocations.size(); i++) {
-            double newLatitude = mLocations.get(i).getLatitude();
-            double newLongitude = mLocations.get(i).getLongitude();
-            LatLng newLocation = new LatLng(newLatitude, newLongitude);
-            MarkerOptions marker = new MarkerOptions().position(newLocation)
-                    .title(mLocations.get(i).getChildName() + "'s location" + ": " + newLatitude + ", " + newLongitude)
-                    .snippet("Recorded at: " + mLocations.get(i).getTime());
-            mMap.addMarker(marker).showInfoWindow();
-            builder.include(marker.getPosition());
+            long childId = mLocations.get(i).getChildId();
+            if (trackedChildren.contains(childId)) {
+                double newLatitude = mLocations.get(i).getLatitude();
+                double newLongitude = mLocations.get(i).getLongitude();
+                newLocation = new LatLng(newLatitude, newLongitude);
+                MarkerOptions marker = new MarkerOptions().position(newLocation)
+                        .title(mLocations.get(i).getChildName() + "'s location" + ": " + newLatitude + ", " + newLongitude)
+                        .snippet("Recorded at: " + mLocations.get(i).getTime());
+                mMap.addMarker(marker).showInfoWindow();
+                builder.include(marker.getPosition());
+            }
         }
-        LatLngBounds bounds = builder.build();
-        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 350));
-//        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newLocation, 15));
+        if (trackedChildren.size() > 1) {
+            LatLngBounds bounds = builder.build();
+            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 350));
+        }
+        else if (trackedChildren.size() == 1 && newLocation != null)
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newLocation, 15));
+
     }
 
 
@@ -170,7 +185,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onCheckedStateChanged(MultiSelectToggleGroup group, int checkedId, boolean isChecked) {
         LabelToggle button = group.findViewById(checkedId);
-
+        long childId = (long) button.getTag();
+        if (isChecked) {
+            trackedChildren.add(childId);
+        } else {
+            trackedChildren.remove(childId);
+        }
+        updateRealTimeLocations();
         Log.e("tag: " + button.getTag().toString(), "name: " + button.getText().toString() + ", " + "checked: " + isChecked);
     }
 }

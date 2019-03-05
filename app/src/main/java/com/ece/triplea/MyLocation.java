@@ -1,7 +1,7 @@
 package com.ece.triplea;
 
 public class MyLocation {
-    private int locationId, childId;
+    private long locationId, childId;
     private double latitude, longitude;
     private String time, childName;
 
@@ -13,7 +13,7 @@ public class MyLocation {
         this.childName = childName;
     }
 
-    public MyLocation(int locationId, int childId, String childName, double latitude, double longitude, String time) {
+    public MyLocation(long locationId, long childId, String childName, double latitude, double longitude, String time) {
         this.locationId = locationId;
         this.childId = childId;
         this.childName = childName;
@@ -22,7 +22,7 @@ public class MyLocation {
         this.time = time;
     }
 
-    public int getLocationId() {
+    public long getLocationId() {
         return locationId;
     }
 
@@ -30,7 +30,7 @@ public class MyLocation {
         this.locationId = locationId;
     }
 
-    public int getChildId() {
+    public long getChildId() {
         return childId;
     }
 
