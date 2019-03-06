@@ -3,7 +3,6 @@ package com.ece.triplea;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -15,20 +14,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.ece.triplea.R;
-import com.google.gson.JsonArray;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,7 +30,7 @@ import org.json.JSONObject;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link SignInFragment.OnFragmentInteractionListener} interface
+ * {@link SignInFragment.OnNextClickedListener} interface
  * to handle interaction events.
  * Use the {@link SignInFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -52,7 +45,7 @@ public class SignInFragment extends Fragment implements Response.Listener<JSONAr
     private String mParam1;
     private String mParam2;
 
-    private OnFragmentInteractionListener mListener;
+    private OnNextClickedListener mListener;
 
     EditText txtPhoneNumber, txtPassword;
     Button btnLogin;
@@ -100,17 +93,17 @@ public class SignInFragment extends Fragment implements Response.Listener<JSONAr
     }
 
     // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
+    public void onNextPressed() {
         if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+            mListener.onSigninClicked();
         }
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
+        if (context instanceof OnNextClickedListener) {
+            mListener = (OnNextClickedListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -133,11 +126,11 @@ public class SignInFragment extends Fragment implements Response.Listener<JSONAr
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
+    public interface OnNextClickedListener {
 
 
         // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+        void onSigninClicked();
 
     }
     @Override
@@ -208,6 +201,7 @@ public class SignInFragment extends Fragment implements Response.Listener<JSONAr
             editor.apply();
             Intent intent = new Intent(getContext(), ManageChildrenActivity.class);
             startActivity(intent);
+            onNextPressed();
         } else {
             showSnackbar(msg);
         }

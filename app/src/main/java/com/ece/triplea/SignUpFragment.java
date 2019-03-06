@@ -1,7 +1,8 @@
 package com.ece.triplea;
 
 import android.content.Context;
-import android.net.Uri;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,20 +13,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.ece.triplea.R;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link SignUpFragment.OnFragmentInteractionListener} interface
+ * {@link SignUpFragment.OnNextClickedListener} interface
  * to handle interaction events.
  * Use the {@link SignUpFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -40,7 +45,7 @@ public class SignUpFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    private OnFragmentInteractionListener mListener;
+    private OnNextClickedListener mListener;
 
     RequestQueue queue;
 
@@ -90,9 +95,9 @@ public class SignUpFragment extends Fragment {
     }
 
     // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
+    public void onButtonPressed() {
         if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+            mListener.onSignupClicked();
         }
     }
 
@@ -122,12 +127,28 @@ public class SignUpFragment extends Fragment {
                         "&phone=" + phone;
 
 // Request a string response from the provided URL.
-                StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                        new Response.Listener<String>() {
+                JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,
+                        new Response.Listener<JSONArray>() {
                             @Override
-                            public void onResponse(String response) {
-                                // Display the first 500 characters of the response string.
-                                showSnackbar(response);
+                            public void onResponse(JSONArray jsonArray) {
+                                try {
+                                    JSONObject jsonObject = jsonArray.getJSONObject(0);
+                                    boolean error = jsonObject.getBoolean("error");
+                                    if (!error) {
+                                        long userId = jsonObject.getLong("id");
+                                        String msg = jsonObject.getString("msg");
+                                        if (userId < 0) showSnackbar(msg);
+                                        else {
+                                            showSnackbar(msg);
+                                            loginAfterSignup(userId);
+                                        }
+                                    } else showSnackbar("Cannot create account! try another username or phone number.");
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                    showSnackbar("Error! " + e.getMessage());
+                                }
+
+                                onButtonPressed();
                             }
                         }, new Response.ErrorListener() {
                     @Override
@@ -137,9 +158,19 @@ public class SignUpFragment extends Fragment {
                 });
 
 // Add the request to the RequestQueue.
-                queue.add(stringRequest);
+                queue.add(request);
             }
         });
+    }
+
+    private void loginAfterSignup(long userId) {
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("GLOBAL", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putLong("user_id", userId);
+        editor.apply();
+        Intent intent = new Intent(getContext(), ManageChildrenActivity.class);
+        startActivity(intent);
+        onButtonPressed();
     }
 
     private void showSnackbar(String text){
@@ -155,8 +186,8 @@ public class SignUpFragment extends Fragment {
     @Override
     public void onAttach(final Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
+        if (context instanceof OnNextClickedListener) {
+            mListener = (OnNextClickedListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -180,9 +211,9 @@ public class SignUpFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
+    public interface OnNextClickedListener {
         // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+        void onSignupClicked();
     }
 
 
