@@ -1,6 +1,8 @@
 package com.ece.triplea;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -39,6 +41,7 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
     ViewFlipper viewFlipper;
     RequestQueue volleyQueue;
     Button btnNext;
+    long userId = -1;
     private int PAGE_LOADING = 0;
     private int PAGE_ERROR = 1;
     private int PAGE_NO_CHILDREN = 2;
@@ -50,6 +53,9 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
         setContentView(R.layout.activity_manage_children);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("GLOBAL", Context.MODE_PRIVATE);
+        userId = sharedPreferences.getLong("user_id", -1);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -86,7 +92,7 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
 
     private void makeRequest() {
         viewFlipper.setDisplayedChild(PAGE_LOADING);
-        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, getString(R.string.base_url) + "ChildrenGet.php", null, this, this);
+        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, getString(R.string.local_ip) + "ChildrenGet.php?user_id=" + userId, null, this, this);
         volleyQueue.add(request);
 
     }
