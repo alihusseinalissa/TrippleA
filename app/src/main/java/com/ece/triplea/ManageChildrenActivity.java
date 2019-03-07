@@ -105,7 +105,7 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
 
     private void makeRequest() {
         viewFlipper.setDisplayedChild(PAGE_LOADING);
-        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, getString(R.string.local_ip) + "ChildrenGet.php?user_id=" + userId, null, this, this);
+        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, getString(R.string.base_url) + "ChildrenGet.php?user_id=" + userId, null, this, this);
         volleyQueue.add(request);
 
     }

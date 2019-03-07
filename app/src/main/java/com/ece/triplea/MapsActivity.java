@@ -98,7 +98,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void getLatestLocation() {
-        String url = getString(R.string.local_ip) +
+        String url = getString(R.string.base_url) +
                 getString(R.string.ulr_location_get_last)
                 + "?user_id=" + userId;
 

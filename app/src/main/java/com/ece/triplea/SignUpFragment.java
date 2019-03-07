@@ -119,7 +119,7 @@ public class SignUpFragment extends Fragment {
                 String name = txtName.getText().toString();
                 String pass = txtPass.getText().toString();
                 String phone = txtPhone.getText().toString();
-                String url = getString(R.string.local_ip) + "UserAdd.php?"+
+                String url = getString(R.string.base_url) + "UserAdd.php?"+
                         "name=" + name +
                         "&pass=" + pass +
                         "&email=" + "" +
