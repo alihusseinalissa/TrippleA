@@ -1,9 +1,8 @@
-package com.ece.triplea;
+package com.ece.triplea.fragment;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -22,6 +21,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
+import com.ece.triplea.activity.ManageChildrenActivity;
+import com.ece.triplea.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;

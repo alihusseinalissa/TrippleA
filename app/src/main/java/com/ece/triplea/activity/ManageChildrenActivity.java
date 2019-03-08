@@ -1,4 +1,4 @@
-package com.ece.triplea;
+package com.ece.triplea.activity;
 
 import android.content.Context;
 import android.content.Intent;
@@ -28,6 +28,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
+import com.ece.triplea.R;
+import com.ece.triplea.model.Child;
 
 import org.json.JSONArray;
 import org.json.JSONException;

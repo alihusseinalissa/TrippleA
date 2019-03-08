@@ -1,4 +1,4 @@
-package com.ece.triplea;
+package com.ece.triplea.model;
 
 public class MyLocation {
     private long locationId, childId;

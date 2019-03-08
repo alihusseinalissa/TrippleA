@@ -1,4 +1,4 @@
-package com.ece.triplea;
+package com.ece.triplea.activity;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -8,6 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+
+import com.ece.triplea.R;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 

@@ -1,4 +1,4 @@
-package com.ece.triplea;
+package com.ece.triplea.fragment;
 
 import android.content.Context;
 import android.content.Intent;
@@ -19,9 +19,9 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.ece.triplea.activity.ManageChildrenActivity;
+import com.ece.triplea.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;

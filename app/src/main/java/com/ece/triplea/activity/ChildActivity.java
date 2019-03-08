@@ -1,4 +1,4 @@
-package com.ece.triplea;
+package com.ece.triplea.activity;
 
 import android.Manifest;
 import android.app.ActivityManager;
@@ -16,11 +16,12 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.agrawalsuneet.loaderspack.loaders.MultipleRippleLoader;
+import com.ece.triplea.service.LocationSenderService;
+import com.ece.triplea.R;
 
 public class ChildActivity extends AppCompatActivity {
 

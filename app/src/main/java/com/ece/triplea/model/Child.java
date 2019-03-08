@@ -1,4 +1,4 @@
-package com.ece.triplea;
+package com.ece.triplea.model;
 
 public class Child {
     private long childId;

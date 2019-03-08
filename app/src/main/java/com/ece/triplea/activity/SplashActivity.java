@@ -1,11 +1,12 @@
-package com.ece.triplea;
+package com.ece.triplea.activity;
 
-import android.app.ActionBar;
 import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+
+import com.ece.triplea.R;
 
 public class SplashActivity extends AppCompatActivity {
 
