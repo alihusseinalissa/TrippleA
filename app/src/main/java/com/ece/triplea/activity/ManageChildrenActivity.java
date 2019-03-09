@@ -1,6 +1,7 @@
 package com.ece.triplea.activity;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.support.design.widget.BottomSheetDialog;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -18,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -48,6 +51,7 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
     TextView txtNoChildren;
     ViewFlipper viewFlipper;
     RequestQueue volleyQueue;
+    FloatingActionButton fab;
     Button btnNext;
     BottomSheetDialog mBottomSheetDialog;
     View sheetView;
@@ -71,13 +75,50 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
         userId = sharedPreferences.getLong("user_id", -1);
         initMode = sharedPreferences.getBoolean("init", true);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(ManageChildrenActivity.this);
+                LayoutInflater inflater = getLayoutInflater();
+                View dialogView = inflater.inflate(R.layout.dialog_new_child, null);
+                builder.setView(dialogView);
+                builder.setTitle("Add New Child:");
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
 
-//                mChildren.add(new Child(0, "ali", "123"));
-//                mAdapter.notifyDataSetChanged();
+                final EditText txtChildName = dialogView.findViewById(R.id.txtChildName);
+                final EditText txtChildPhone = dialogView.findViewById(R.id.txtChildPhone);
+
+                builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        viewFlipper.setDisplayedChild(PAGE_LOADING);
+                        fab.hide();
+                        mChildren.clear();
+
+
+
+
+                        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET,
+                                getString(R.string.base_url) + "ChildrenAdd.php"
+                                        + "?user_id=" + userId
+                                        + "&child_name=" + txtChildName.getText().toString()
+                                        + "&child_phone=" + txtChildPhone.getText().toString(),
+                                null,
+                                ManageChildrenActivity.this,
+                                ManageChildrenActivity.this);
+                        volleyQueue.add(request);
+
+                    }
+                });
+
+                builder.show();
+
 
             }
         });
@@ -115,6 +156,15 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
 
         loadOptionsMenu();
 
+        Button btnRetry = findViewById(R.id.btnRetry);
+        btnRetry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                makeRequest();
+            }
+        });
+
+
     }
 
     private void loadOptionsMenu() {
@@ -135,28 +185,40 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
         optionDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                viewFlipper.setDisplayedChild(PAGE_LOADING);
                 mBottomSheetDialog.dismiss();
-                mChildren.clear();
-                JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET,
-                        getString(R.string.base_url) + "ChildrenDelete.php"
-                                + "?user_id=" + userId
-                                + "&child_id=" + selectedChildId,
-                        null,
-                        ManageChildrenActivity.this,
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.v("error", "can't get children after delete");
-                            }
-                        });
-                volleyQueue.add(request);
+                AlertDialog.Builder builder = new AlertDialog.Builder(ManageChildrenActivity.this);
+                builder.setMessage("Are you sure you want to delete this child?");
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        viewFlipper.setDisplayedChild(PAGE_LOADING);
+                        fab.hide();
+                        mChildren.clear();
+                        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET,
+                                getString(R.string.base_url) + "ChildrenDelete.php"
+                                        + "?user_id=" + userId
+                                        + "&child_id=" + selectedChildId,
+                                null,
+                                ManageChildrenActivity.this,
+                                new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError error) {
+                                        Log.v("error", "cannot delete");
+                                    }
+                                });
+                        volleyQueue.add(request);
+                    }
+                });
+                builder.setNegativeButton("No", null);
+                builder.show();
+
             }
         });
     }
 
     private void makeRequest() {
         viewFlipper.setDisplayedChild(PAGE_LOADING);
+        fab.hide();
         JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, getString(R.string.base_url) + "ChildrenGet.php?user_id=" + userId, null, this, this);
         volleyQueue.add(request);
 
@@ -176,6 +238,7 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
             }
             mAdapter.notifyDataSetChanged();
             viewFlipper.setDisplayedChild(PAGE_LIST);
+            fab.show();
 
 
         } catch (JSONException e) {
@@ -186,7 +249,8 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
 
     private void showError() {
         viewFlipper.setDisplayedChild(PAGE_ERROR);
-        Snackbar.make(mListView, "Error Getting Children", Snackbar.LENGTH_LONG)
+        fab.hide();
+        Snackbar.make(mListView, "Please check your internet connection", Snackbar.LENGTH_LONG)
                 .setAction("Try Again", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -259,8 +323,10 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
             super.notifyDataSetChanged();
             if (mChildren.size()<=0) {
                 viewFlipper.setDisplayedChild(PAGE_NO_CHILDREN);
+                fab.show();
             } else {
                 viewFlipper.setDisplayedChild(PAGE_LIST);
+                fab.show();
             }
         }
     }
