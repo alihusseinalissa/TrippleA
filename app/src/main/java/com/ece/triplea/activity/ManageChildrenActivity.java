@@ -4,15 +4,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.design.widget.BottomSheetDialog;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -37,7 +40,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class ManageChildrenActivity extends AppCompatActivity implements Response.Listener<JSONArray>, Response.ErrorListener, View.OnClickListener {
+public class ManageChildrenActivity extends AppCompatActivity implements Response.Listener<JSONArray>, Response.ErrorListener, View.OnClickListener, AdapterView.OnItemClickListener {
 
     final ArrayList<Child> mChildren = new ArrayList<>();
     ListView mListView;
@@ -46,6 +49,10 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
     ViewFlipper viewFlipper;
     RequestQueue volleyQueue;
     Button btnNext;
+    BottomSheetDialog mBottomSheetDialog;
+    View sheetView;
+    LinearLayout optionEdit, optionDelete;
+    long selectedChildId = -1;
     long userId = -1;
     boolean initMode;
     private int PAGE_LOADING = 0;
@@ -68,6 +75,7 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
 //                mChildren.add(new Child(0, "ali", "123"));
 //                mAdapter.notifyDataSetChanged();
 
@@ -103,6 +111,48 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
             fab.setLayoutParams(lp);
         }
 
+        mListView.setOnItemClickListener(this);
+
+        loadOptionsMenu();
+
+    }
+
+    private void loadOptionsMenu() {
+        mBottomSheetDialog = new BottomSheetDialog(this);
+        sheetView = getLayoutInflater().inflate(R.layout.children_options, null);
+        mBottomSheetDialog.setContentView(sheetView);
+
+        optionEdit = sheetView.findViewById(R.id.option_edit);
+        optionDelete = sheetView.findViewById(R.id.option_delete);
+
+        optionEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Edit code here;
+            }
+        });
+
+        optionDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                viewFlipper.setDisplayedChild(PAGE_LOADING);
+                mBottomSheetDialog.dismiss();
+                mChildren.clear();
+                JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET,
+                        getString(R.string.base_url) + "ChildrenDelete.php"
+                                + "?user_id=" + userId
+                                + "&child_id=" + selectedChildId,
+                        null,
+                        ManageChildrenActivity.this,
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.v("error", "can't get children after delete");
+                            }
+                        });
+                volleyQueue.add(request);
+            }
+        });
     }
 
     private void makeRequest() {
@@ -159,6 +209,12 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
         Intent intent = new Intent(this, MapsActivity.class);
         startActivity(intent);
         this.finish();
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        selectedChildId = id;
+        mBottomSheetDialog.show();
     }
 
     public class ChildrenListAdapter extends BaseAdapter {
