@@ -12,7 +12,7 @@ public class LoginTabAdapter extends FragmentStatePagerAdapter {
     private final List<Fragment> mFragmentList = new ArrayList<>();
     private final List<String> mFragmentTitleList = new ArrayList<>();
 
-    LoginTabAdapter(FragmentManager fm) {
+    public LoginTabAdapter(FragmentManager fm) {
         super(fm);
     }
 
