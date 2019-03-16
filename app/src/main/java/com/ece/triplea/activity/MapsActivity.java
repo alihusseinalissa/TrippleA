@@ -1,9 +1,12 @@
 package com.ece.triplea.activity;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.design.widget.BottomSheetDialog;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -11,12 +14,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.ece.triplea.R;
@@ -40,7 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.InfoWindowAdapter, MultiSelectToggleGroup.OnCheckedStateChangeListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.InfoWindowAdapter, MultiSelectToggleGroup.OnCheckedStateChangeListener, View.OnLongClickListener {
 
     private GoogleMap mMap;
     RequestQueue volleyQueue;
@@ -49,6 +54,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     Map<Long, MyLocation> mapLocations = new HashMap<>();
     MultiSelectToggleGroup childrenPanel;
     ArrayList<Long> trackedChildren = new ArrayList<>();
+
+    BottomSheetDialog mBottomSheetDialog;
+    View sheetView;
+    LinearLayout optionHistory, optionDelete;
+    long selectedChildId = -1;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -91,6 +101,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         userId = sharedPreferences.getLong("user_id", -1);
         childrenPanel = findViewById(R.id.children_panel);
         childrenPanel.setOnCheckedChangeListener(this);
+        childrenPanel.setOnLongClickListener(this);
+
+        loadOptionsMenu();
 
 
     }
@@ -146,6 +159,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         button.setTag(childId);
         button.setChecked(true);
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        button.setLongClickable(true);
+        button.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                long childId = (long) v.getTag();
+                selectedChildId = childId;
+                mBottomSheetDialog.show();
+                return true;
+            }
+        });
         childrenPanel.addView(button, lp);
     }
 
@@ -224,4 +248,37 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         updateRealTimeLocations();
         Log.e("tag: " + button.getTag().toString(), "name: " + button.getText().toString() + ", " + "checked: " + isChecked);
     }
+
+    @Override
+    public boolean onLongClick(View v) {
+        long childId = (long) v.getTag();
+        selectedChildId = childId;
+        mBottomSheetDialog.show();
+        return false;
+    }
+
+    private void loadOptionsMenu() {
+        mBottomSheetDialog = new BottomSheetDialog(this);
+        sheetView = getLayoutInflater().inflate(R.layout.map_child_options, null);
+        mBottomSheetDialog.setContentView(sheetView);
+
+        optionHistory = sheetView.findViewById(R.id.option_history);
+        //optionDelete = sheetView.findViewById(R.id.option_delete);
+
+        optionHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.v("clicked", String.valueOf(selectedChildId));
+            }
+        });
+
+//        optionDelete.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                mBottomSheetDialog.dismiss();
+//
+//            }
+//        });
+    }
+
 }
