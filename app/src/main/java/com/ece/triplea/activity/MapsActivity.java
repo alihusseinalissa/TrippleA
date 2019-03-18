@@ -5,16 +5,24 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -59,6 +67,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     View sheetView;
     LinearLayout optionHistory, optionDelete;
     long selectedChildId = -1;
+
+    HistoryListAdapter mAdapter;
+    ListView mListView;
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -105,6 +118,64 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         loadOptionsMenu();
 
+        mListView = findViewById(R.id.listHistory);
+        mListView.setOnTouchListener(new ListView.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                int action = event.getAction();
+                switch (action) {
+                    case MotionEvent.ACTION_DOWN:
+                        // Disallow NestedScrollView to intercept touch events.
+                        v.getParent().requestDisallowInterceptTouchEvent(true);
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        // Allow NestedScrollView to intercept touch events.
+                        v.getParent().requestDisallowInterceptTouchEvent(false);
+                        break;
+                }
+
+                // Handle ListView touch events.
+                v.onTouchEvent(event);
+                return true;
+            }
+        });
+
+        final ImageView btnHistory = findViewById(R.id.btnHistory);
+        btnHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CardView llBottomSheet = findViewById(R.id.bottom_sheet);
+
+// init the bottom sheet behavior
+                BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(llBottomSheet);
+
+// change the state of the bottom sheet
+                if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED){
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                }
+                else {
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                }
+
+                bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+                    @Override
+                    public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                        if (newState == BottomSheetBehavior.STATE_EXPANDED){
+                            btnHistory.setImageResource(R.drawable.ic_keyboard_arrow_down_black_32dp);
+                        }
+                        else
+                            btnHistory.setImageResource(R.drawable.ic_history_black_32dp);
+                    }
+
+                    @Override
+                    public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
+                    }
+                });
+            }
+        });
+
 
     }
 
@@ -134,6 +205,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 mapLocations.put(childId, location);
                                 addButton(childId, childName);
                                 updateRealTimeLocations();
+                                mAdapter = new HistoryListAdapter(mLocations);
+                                mListView.setAdapter(mAdapter);
+                                mAdapter.notifyDataSetChanged();
                             }
 
                             //getLatestLocation();
@@ -279,6 +353,57 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //
 //            }
 //        });
+    }
+
+    public class HistoryListAdapter extends BaseAdapter {
+
+        ArrayList<MyLocation> items = new ArrayList<>();
+
+        HistoryListAdapter(ArrayList<MyLocation> list) {
+            this.items = list;
+        }
+
+        @Override
+        public int getCount() {
+            return items.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return items.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return items.get(position).getLocationId();
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            LayoutInflater inflater = getLayoutInflater();
+            View view = inflater.inflate(R.layout.history_row, null);
+
+            TextView txtChildName = view.findViewById(R.id.txtChildName);
+            TextView txtChildLocation = view.findViewById(R.id.txtChildLocation);
+            TextView txtTime = view.findViewById(R.id.txtTime);
+            txtChildName.setText(items.get(position).getChildName());
+            txtChildLocation.setText(String.format("%s, %s", items.get(position).getLatitude(), items.get(position).getLongitude()));
+            txtTime.setText(items.get(position).getTime());
+
+            return view;
+        }
+
+        @Override
+        public void notifyDataSetChanged() {
+            super.notifyDataSetChanged();
+//            if (mChildren.size()<=0) {
+//                viewFlipper.setDisplayedChild(PAGE_NO_CHILDREN);
+//                fab.show();
+//            } else {
+//                viewFlipper.setDisplayedChild(PAGE_LIST);
+//                fab.show();
+//            }
+        }
     }
 
 }
