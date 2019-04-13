@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <array name="mode_options">
+        <item>Parent</item>
+        <item>Child</item>
+    </array>
+
+</resources>

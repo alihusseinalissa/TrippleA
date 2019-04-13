@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -34,6 +35,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.ece.triplea.R;
 import com.ece.triplea.model.MyLocation;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -71,6 +73,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     HistoryListAdapter mAdapter;
     ListView mListView;
 
+    String lastSuccessfulResponse = "";
 
 
     @Override
@@ -106,7 +109,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+        final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         volleyQueue = Volley.newRequestQueue(this);
@@ -131,6 +134,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     case MotionEvent.ACTION_UP:
                         // Allow NestedScrollView to intercept touch events.
+                        //TODO: use addMarkers() when bottom sheet is collapsed
                         v.getParent().requestDisallowInterceptTouchEvent(false);
                         break;
                 }
@@ -138,6 +142,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 // Handle ListView touch events.
                 v.onTouchEvent(event);
                 return true;
+            }
+        });
+
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                mMap.clear();
+//                double latitude = mLocations.get(position).getLatitude();
+//                double longitude = mLocations.get(position).getLongitude();
+//                LatLng point = new LatLng(latitude, longitude);
+//                mMap.addMarker(new MarkerOptions().position(point));
+//                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(point, 15));
+//                mBottomSheetDialog.dismiss();
             }
         });
 
@@ -190,30 +207,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void onResponse(String response) {
                         // Display the first 500 characters of the response string.
-                        try {
-                            JSONArray jsonArray = (new JSONArray(response)).getJSONArray(0);
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                long locationId = jsonObject.getLong("location_id");
-                                long childId = jsonObject.getLong("childid");
-                                String childName = jsonObject.getString("child_name");
-                                double latitude = jsonObject.getDouble("location_lat");
-                                double longitude = jsonObject.getDouble("location_lng");
-                                String time = jsonObject.getString("location_time");
-                                MyLocation location = new MyLocation(locationId, childId, childName, latitude, longitude, time);
-                                mLocations.add(location);
-                                mapLocations.put(childId, location);
-                                addButton(childId, childName);
-                                updateRealTimeLocations();
-                                mAdapter = new HistoryListAdapter(mLocations);
-                                mListView.setAdapter(mAdapter);
-                                mAdapter.notifyDataSetChanged();
-                            }
-
-                            //getLatestLocation();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                        lastSuccessfulResponse = response;
+                        addMarkers();
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -225,6 +220,33 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Add the request to the RequestQueue.
         volleyQueue.add(stringRequest);
+    }
+
+    void addMarkers() {
+        try {
+            JSONArray jsonArray = (new JSONArray(lastSuccessfulResponse)).getJSONArray(0);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                long locationId = jsonObject.getLong("location_id");
+                long childId = jsonObject.getLong("childid");
+                String childName = jsonObject.getString("child_name");
+                double latitude = jsonObject.getDouble("location_lat");
+                double longitude = jsonObject.getDouble("location_lng");
+                String time = jsonObject.getString("location_time");
+                MyLocation location = new MyLocation(locationId, childId, childName, latitude, longitude, time);
+                mLocations.add(location);
+                mapLocations.put(childId, location);
+                addButton(childId, childName);
+                updateRealTimeLocations();
+                mAdapter = new HistoryListAdapter(mLocations);
+                mListView.setAdapter(mAdapter);
+                mAdapter.notifyDataSetChanged();
+            }
+
+            //getLatestLocation();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void addButton(long childId, String childName) {

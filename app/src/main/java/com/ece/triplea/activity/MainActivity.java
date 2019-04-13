@@ -8,22 +8,33 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.ece.triplea.R;
 
+import lib.kingja.switchbutton.SwitchMultiButton;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    Button buChild, buParent;
+    Button buNext;
+    SwitchMultiButton mSwitchMultiButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        buChild = findViewById(R.id.buChild);
-        buParent = findViewById(R.id.buParent);
+        buNext = findViewById(R.id.buNext);
+        buNext.setOnClickListener(this);
 
-        buChild.setOnClickListener(this);
-        buParent.setOnClickListener(this);
+        mSwitchMultiButton = findViewById(R.id.modeSwitch);
+        mSwitchMultiButton.setOnSwitchListener(new SwitchMultiButton.OnSwitchListener() {
+            @Override
+            public void onSwitch(int position, String tabText) {
+                if (position > -1)
+                    buNext.setEnabled(true);
+            }
+        });
 
         createNotificationChannel();
     }
@@ -32,17 +43,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         Intent intent;
-        switch (v.getId()){
-            case R.id.buChild:
-                intent = new Intent(MainActivity.this, ChildActivity.class);
-                break;
-            case R.id.buParent:
-                intent = new Intent(MainActivity.this, MapsActivity.class);
-                break;
-            default:
-                return;
-        }
+        intent = new Intent(MainActivity.this, mSwitchMultiButton.getSelectedTab() == 0 ? MapsActivity.class : ChildActivity.class);
         startActivity(intent);
+        this.finish();
     }
 
     private void createNotificationChannel() {

@@ -6,22 +6,40 @@
     android:layout_height="match_parent"
     tools:context=".activity.MainActivity">
 
-    <Button
-        android:id="@+id/buChild"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+    <TextView
+        android:text="For which person does this phone (or watch) belong?"
+        android:gravity="center"
+        android:layout_above="@id/modeSwitch"
+        android:layout_width="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="114dp"
-        android:text="I am a child" />
+        android:padding="16dp"
+        android:textSize="20sp"
+        android:layout_height="wrap_content" />
+
+    <lib.kingja.switchbutton.SwitchMultiButton
+        android:id="@+id/modeSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:layout_centerInParent="true"
+        app:selectedColor="@color/colorAccent"
+        app:selectedTab="-1"
+
+        app:strokeRadius="5dp"
+        app:strokeWidth="1dp"
+
+        app:switchTabs="@array/mode_options"
+        app:textSize="24sp"
+        />
 
     <Button
-        android:id="@+id/buParent"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="173dp"
-        android:text="I am a parent" />
+        android:layout_alignParentBottom="true"
+        android:id="@+id/buNext"
+        android:text="next"
+        android:enabled="false"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+
 
 </RelativeLayout>
