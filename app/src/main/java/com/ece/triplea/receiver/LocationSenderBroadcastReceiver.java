@@ -12,7 +12,7 @@ public class LocationSenderBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.i(LocationSenderBroadcastReceiver.class.getSimpleName(), "Service Stops! Oooooooooooooppppssssss!!!!");
-        SharedPreferences pref = context.getSharedPreferences("pref", Context.MODE_PRIVATE);
+        SharedPreferences pref = context.getApplicationContext().getSharedPreferences("GLOBAL", Context.MODE_PRIVATE);
         if (pref.getBoolean("serviceSwitch", false)){
             LocationSenderService mService = new LocationSenderService(context);
             Intent mServiceIntent = new Intent(context, mService.getClass());

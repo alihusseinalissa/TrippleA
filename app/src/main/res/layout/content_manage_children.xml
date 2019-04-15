@@ -69,17 +69,12 @@
 
         <ListView
             android:id="@+id/listChildren"
+            android:choiceMode="singleChoice"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
         </ListView>
 
     </ViewFlipper>
-
-    <Button
-        android:id="@+id/btnNext"
-        android:text="next"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
 
 </LinearLayout>

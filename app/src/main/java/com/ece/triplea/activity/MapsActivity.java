@@ -46,6 +46,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.nex3z.togglebuttongroup.MultiSelectToggleGroup;
 import com.nex3z.togglebuttongroup.button.LabelToggle;
+import com.stepstone.stepper.Step;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -87,12 +88,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_sign_out:
-                SharedPreferences sharedPreferences = getSharedPreferences("GLOBAL", Context.MODE_PRIVATE);
+                SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("GLOBAL", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putBoolean("init", true);
                 editor.putLong("user_id", -1);
+                editor.putLong("child_id", -1);
+                editor.putString("mode", "undefined");
                 editor.apply();
-                Intent intent = new Intent(this, LoginActivity.class);
+                Intent intent = new Intent(this, StepperActivity.class);
                 startActivity(intent);
                 this.finish();
                 return true;
@@ -113,7 +116,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         volleyQueue = Volley.newRequestQueue(this);
-        SharedPreferences sharedPreferences = getSharedPreferences("GLOBAL", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("GLOBAL", Context.MODE_PRIVATE);
         userId = sharedPreferences.getLong("user_id", -1);
         childrenPanel = findViewById(R.id.children_panel);
         childrenPanel.setOnCheckedChangeListener(this);

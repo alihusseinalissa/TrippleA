@@ -39,6 +39,8 @@ public class ChildActivity extends AppCompatActivity {
 
     Context ctx;
 
+    long mChildId;
+
     public Context getCtx() {
         return ctx;
     }
@@ -47,7 +49,8 @@ public class ChildActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_child);
-        pref = getSharedPreferences("pref", MODE_PRIVATE);
+        pref = getApplicationContext().getSharedPreferences("GLOBAL", MODE_PRIVATE);
+        mChildId = pref.getLong("child_id", -1);
         view_flipper = (ViewFlipper) findViewById(R.id.view_flipper);
         View include1 = findViewById(R.id.uploading_layout);
         rippleLoader = include1.findViewById(R.id.ripple_layout);
@@ -86,7 +89,7 @@ public class ChildActivity extends AppCompatActivity {
                     .setMessage("The application needs the permission of Accessing Fine Location, please accept.")
                     .setPositiveButton("ok", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            ActivityCompat.requestPermissions(MainActivity.this,
+                            ActivityCompat.requestPermissions(ChooseModeFragment.this,
                                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION
                                     }, 1);
                         }

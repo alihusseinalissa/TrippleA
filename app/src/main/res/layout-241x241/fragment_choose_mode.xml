@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activity.MainActivity">
+    tools:context=".fragment.ChooseModeFragment">
 
     <TextView
         android:text="For which person does this phone (or watch) belong?"
@@ -31,15 +31,6 @@
         app:switchTabs="@array/mode_options"
         app:textSize="24sp"
         />
-
-    <Button
-        android:layout_alignParentBottom="true"
-        android:id="@+id/buNext"
-        android:text="next"
-        android:enabled="false"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
 
 
 </RelativeLayout>

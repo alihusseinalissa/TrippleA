@@ -1,12 +1,14 @@
 package com.ece.triplea.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
 import com.ece.triplea.R;
+import com.stepstone.stepper.Step;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -57,8 +59,20 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void routeToAppropriatePage() {
-        // Example routing
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("GLOBAL", MODE_PRIVATE);
+        Class c = null;
+        if (sharedPreferences.getBoolean("init", true)){
+            c = StepperActivity.class;
+        } else {
+            String mode = sharedPreferences.getString("mode", "unefined");
+            if (mode.equals("parent"))
+                c = MapsActivity.class;
+            else if (mode.equals("child"))
+                c = ChildActivity.class;
+        }
+        if (c != null) {
+            Intent intent = new Intent(this, c);
+            startActivity(intent);
+        }
     }
 }

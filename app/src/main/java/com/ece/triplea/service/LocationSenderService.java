@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -43,6 +44,8 @@ public class LocationSenderService extends Service {
     private Intent mIntent;
     boolean serviceSwitch;
 
+    long mChildId;
+
     public LocationSenderService(Context applicationContext) {
         super();
         mContext = applicationContext;
@@ -52,6 +55,8 @@ public class LocationSenderService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("GLOBAL", MODE_PRIVATE);
+        mChildId = sharedPreferences.getLong("child_id", -1);
         Intent intent = new Intent(getApplicationContext(), ChildActivity.class);
 //        Intent intent = new Intent(this, Main2Activity.class);
 //        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

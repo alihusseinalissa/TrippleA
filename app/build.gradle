@@ -38,4 +38,6 @@ dependencies {
     implementation 'com.nex3z:toggle-button-group:1.1.9' //children selection
 
     implementation 'lib.kingja.switchbutton:switchbutton:1.1.8' //select mode (parent, child)
+
+    implementation 'com.stepstone.stepper:material-stepper:4.3.1' //stepper
 }
