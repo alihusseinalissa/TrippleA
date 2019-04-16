@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -13,6 +15,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -36,6 +39,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
 import com.ece.triplea.R;
 import com.ece.triplea.activity.ChildActivity;
 import com.ece.triplea.activity.MapsActivity;
@@ -421,8 +425,19 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
             ImageView imgChild = view.findViewById(R.id.imgChild);
             txtChildName.setText(items.get(position).getChildName());
             txtChildPhone.setText(items.get(position).getChildPhone());
+            Glide
+                    .with(getContext())
+                    .load(getChildImageUrl(items.get(position).getChildId()))
+                    .centerCrop()
+                    .into(imgChild);
 
             return view;
+        }
+
+        private String getChildImageUrl(long childId) {
+            return getString(R.string.base_url)
+                    + getString(R.string.ulr_child_image_get)
+                    + "?child_id=" + childId;
         }
 
         @Override

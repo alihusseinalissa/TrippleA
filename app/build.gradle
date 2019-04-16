@@ -40,4 +40,7 @@ dependencies {
     implementation 'lib.kingja.switchbutton:switchbutton:1.1.8' //select mode (parent, child)
 
     implementation 'com.stepstone.stepper:material-stepper:4.3.1' //stepper
+
+    implementation 'com.github.bumptech.glide:glide:4.9.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
 }

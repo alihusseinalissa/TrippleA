@@ -5,6 +5,7 @@
     <string name="ulr_location_add">LocationAdd.php</string>
     <string name="ulr_location_get_last">GetLastLocations.php</string>
     <string name="ulr_children_get">ChildrenGet.php</string>
+    <string name="ulr_child_image_get">GetChildImage.php</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
