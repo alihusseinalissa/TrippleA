@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">TripleA</string>
     <string name="title_activity_maps">Map</string>
-    <string name="base_url">http://ahmadsitee-001-site1.btempurl.com/</string>
+    <string name="base_url">http://ahmadsiteee-001-site1.ctempurl.com/android-backend/</string>
     <string name="ulr_location_add">LocationAdd.php</string>
     <string name="ulr_location_get_last">GetLastLocations.php</string>
     <string name="ulr_children_get">ChildrenGet.php</string>

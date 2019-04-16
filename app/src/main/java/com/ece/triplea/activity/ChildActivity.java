@@ -4,11 +4,14 @@ import android.Manifest;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -52,6 +55,25 @@ public class ChildActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_child);
+
+        if (ContextCompat.checkSelfPermission(ChildActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            new AlertDialog.Builder(ChildActivity.this)
+                    .setTitle("Permission is needed")
+                    .setMessage("The application needs the permission of Accessing Fine Location, please accept.")
+                    .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            ActivityCompat.requestPermissions(ChildActivity.this,
+                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION
+                                    }, 0);
+                        }
+                    })
+
+                    .setCancelable(false)
+                    .show();
+        }
+
+
         pref = getApplicationContext().getSharedPreferences("GLOBAL", MODE_PRIVATE);
         mChildId = pref.getLong("child_id", -1);
         view_flipper = (ViewFlipper) findViewById(R.id.view_flipper);
@@ -81,38 +103,11 @@ public class ChildActivity extends AppCompatActivity {
         registerReceiver(broadcastReceiver, intentFilter);
 
 
-        if (//ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
-            //    != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                        != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Permission is not granted!", Toast.LENGTH_SHORT).show();
-
-/*
-            new AlertDialog.Builder(this)
-                    .setTitle("Permission is needed")
-                    .setMessage("The application needs the permission of Accessing Fine Location, please accept.")
-                    .setPositiveButton("ok", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            ActivityCompat.requestPermissions(ChooseModeFragment.this,
-                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION
-                                    }, 1);
-                        }
-                    })
-
-                    .setCancelable(false)
-                    .show();
-
-*/
-        }
-
-
         serviceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SharedPreferences.Editor editor = pref.edit();
-                editor.putBoolean("serviceSwitch", isChecked);
-                editor.commit();
                 if (isChecked) {
+
                     if (!isMyServiceRunning(mService.getClass())) {
 //                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 //                       startForegroundService(mServiceIntent);
@@ -120,8 +115,17 @@ public class ChildActivity extends AppCompatActivity {
                         startService(mServiceIntent);
 //                    }
                     }
-                } else stopService(mServiceIntent);
+
+                } else {
+                    stopService(mServiceIntent);
+                }
+
+                SharedPreferences.Editor editor = pref.edit();
+                editor.putBoolean("serviceSwitch", isChecked);
+                editor.apply();
+
                 rippleLoader.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
+
             }
         });
 
@@ -258,6 +262,29 @@ public class ChildActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case 0: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    finish();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request.
+        }
     }
 
 

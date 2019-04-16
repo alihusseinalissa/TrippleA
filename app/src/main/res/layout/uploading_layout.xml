@@ -34,6 +34,7 @@
                 app:multipleripple_fromAlpha="0.8"
                 app:multipleripple_interpolator="@android:anim/decelerate_interpolator"
                 app:multipleripple_noOfRipples="3"
+                android:visibility="visible"
                 app:multipleripple_toAplha="0" />
 
             <ImageView

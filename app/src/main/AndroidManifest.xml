@@ -39,6 +39,7 @@
             android:value="@string/google_maps_key" />
 
         <activity
+            android:screenOrientation="portrait"
             android:name=".activity.MapsActivity"
             android:label="@string/title_activity_maps" />
         <activity android:name=".activity.ChildActivity" />
@@ -59,7 +60,8 @@
             android:exported="true"
             android:label="RestartServiceWhenStopped" />
 
-        <activity android:name=".activity.SplashActivity">
+        <activity android:name=".activity.SplashActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -67,6 +69,7 @@
             </intent-filter>
         </activity>
         <activity
+            android:screenOrientation="portrait"
             android:name=".activity.ManageChildrenActivity"
             android:label="@string/title_activity_manage_children"
             android:theme="@style/AppTheme.NoActionBar" />
