@@ -1,14 +1,19 @@
 package com.ece.triplea.activity;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.media.ThumbnailUtils;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.BottomSheetDialog;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.util.Log;
@@ -30,23 +35,28 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.request.transition.Transition;
 import com.ece.triplea.R;
 import com.ece.triplea.model.MyLocation;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.nex3z.togglebuttongroup.MultiSelectToggleGroup;
 import com.nex3z.togglebuttongroup.button.LabelToggle;
-import com.stepstone.stepper.Step;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -60,9 +70,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
     RequestQueue volleyQueue;
-    private long userId;
+    private long mUserId;
     ArrayList<MyLocation> mLocations = new ArrayList<>();
     Map<Long, MyLocation> mapLocations = new HashMap<>();
+    Map<Long, Bitmap> mapBitmaps = new HashMap<>();
     MultiSelectToggleGroup childrenPanel;
     ArrayList<Long> trackedChildren = new ArrayList<>();
 
@@ -117,7 +128,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
         volleyQueue = Volley.newRequestQueue(this);
         SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("GLOBAL", Context.MODE_PRIVATE);
-        userId = sharedPreferences.getLong("user_id", -1);
+        mUserId = sharedPreferences.getLong("user_id", -1);
         childrenPanel = findViewById(R.id.children_panel);
         childrenPanel.setOnCheckedChangeListener(this);
         childrenPanel.setOnLongClickListener(this);
@@ -171,20 +182,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(llBottomSheet);
 
 // change the state of the bottom sheet
-                if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED){
+                if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                }
-                else {
+                } else {
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 }
 
                 bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
                     @Override
                     public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                        if (newState == BottomSheetBehavior.STATE_EXPANDED){
+                        if (newState == BottomSheetBehavior.STATE_EXPANDED) {
                             btnHistory.setImageResource(R.drawable.ic_keyboard_arrow_down_black_32dp);
-                        }
-                        else
+                        } else
                             btnHistory.setImageResource(R.drawable.ic_history_black_32dp);
                     }
 
@@ -202,7 +211,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void getLatestLocation() {
         String url = getString(R.string.base_url) +
                 getString(R.string.ulr_location_get_last)
-                + "?user_id=" + userId;
+                + "?user_id=" + mUserId;
 
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
@@ -231,25 +240,47 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 long locationId = jsonObject.getLong("location_id");
-                long childId = jsonObject.getLong("childid");
-                String childName = jsonObject.getString("child_name");
+                final long childId = jsonObject.getLong("childid");
+                final String childName = jsonObject.getString("child_name");
                 double latitude = jsonObject.getDouble("location_lat");
                 double longitude = jsonObject.getDouble("location_lng");
                 String time = jsonObject.getString("location_time");
                 MyLocation location = new MyLocation(locationId, childId, childName, latitude, longitude, time);
                 mLocations.add(location);
                 mapLocations.put(childId, location);
-                addButton(childId, childName);
-                updateRealTimeLocations();
-                mAdapter = new HistoryListAdapter(mLocations);
-                mListView.setAdapter(mAdapter);
-                mAdapter.notifyDataSetChanged();
+                Glide.with(this).load(getChildImageUrl(childId)).into(new SimpleTarget<Drawable>() {
+                    @Override
+                    public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                        mapBitmaps.put(childId, convertToBitmap(resource, 300, 300));
+                        addButton(childId, childName);
+                        updateRealTimeLocations();
+                        mAdapter = new HistoryListAdapter(mLocations);
+                        mListView.setAdapter(mAdapter);
+                        mAdapter.notifyDataSetChanged();
+                    }
+                });
+
             }
 
             //getLatestLocation();
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public Bitmap convertToBitmap(Drawable drawable, int widthPixels, int heightPixels) {
+        Bitmap mutableBitmap = Bitmap.createBitmap(widthPixels, heightPixels, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(mutableBitmap);
+        drawable.setBounds(0, 0, widthPixels, heightPixels);
+        drawable.draw(canvas);
+
+        return mutableBitmap;
+    }
+
+    private String getChildImageUrl(long childId) {
+        return getString(R.string.base_url)
+                + getString(R.string.ulr_child_image_get)
+                + "?child_id=" + childId;
     }
 
     private void addButton(long childId, String childName) {
@@ -285,17 +316,59 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 MarkerOptions marker = new MarkerOptions().position(newLocation)
                         .title(mLocations.get(i).getChildName() + "'s location" + ": " + newLatitude + ", " + newLongitude)
                         .snippet("Recorded at: " + mLocations.get(i).getTime());
-                mMap.addMarker(marker).showInfoWindow();
+                addMarker(marker, childId);
+
                 builder.include(marker.getPosition());
             }
         }
         if (trackedChildren.size() > 1) {
             LatLngBounds bounds = builder.build();
             mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 350));
-        }
-        else if (trackedChildren.size() == 1 && newLocation != null)
+        } else if (trackedChildren.size() == 1 && newLocation != null)
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newLocation, 15));
 
+    }
+
+    private void addMarker(MarkerOptions marker, long childId) {
+        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        View view1 = inflater.inflate(R.layout.marker_icon, null);
+
+        ImageView imgMarker = (ImageView) view1.findViewById(R.id.MarkerIcon);
+        //imgMarker.setImageResource(myColors.getIconColor(color));
+
+        ImageView imgImage = (ImageView) view1.findViewById(R.id.MarkerImage);
+
+        Bitmap childImage = mapBitmaps.get(childId);
+
+        if (childImage != null) {
+
+            Bitmap ThumbImage;
+            try {
+                //Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri2);
+                ThumbImage = ThumbnailUtils.extractThumbnail(childImage,
+                        300, 300);
+                imgImage.setImageBitmap(ThumbImage);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+        }
+
+        Bitmap bitmap = getBitmapFromView(view1);
+        marker.icon(BitmapDescriptorFactory.fromBitmap(bitmap));
+        mMap.addMarker(marker).showInfoWindow();
+    }
+
+    public static Bitmap getBitmapFromView(View view) {
+        view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(),
+                Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+        view.draw(canvas);
+        return bitmap;
     }
 
 
@@ -318,13 +391,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public View getInfoWindow(Marker marker) {
 //        return null;
-        View view = getLayoutInflater().inflate(R.layout.marker_info_window,null);
+        View view = getLayoutInflater().inflate(R.layout.marker_info_window, null);
         TextView tv1 = (TextView) view.findViewById(R.id.txtInfo1);
         TextView tv2 = (TextView) view.findViewById(R.id.txtInfo2);
 
         tv1.setText(marker.getTitle());
         tv2.setText(marker.getSnippet());
-
 
 
         return view;
