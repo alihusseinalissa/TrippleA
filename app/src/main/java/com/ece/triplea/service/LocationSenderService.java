@@ -46,6 +46,8 @@ public class LocationSenderService extends Service {
 
     long mChildId, mUserId;
 
+    Location lastReceivedLocation;
+
     public LocationSenderService(Context applicationContext) {
         super();
         mContext = applicationContext;
@@ -95,7 +97,9 @@ public class LocationSenderService extends Service {
                     // ...
 //                    tv.setText(location.getLatitude() + ", " + location.getLongitude());
 //                    Toast.makeText(ChildActivity.this, "2", Toast.LENGTH_SHORT).show();
-                    pushToDatabase(location);
+                    if (lastReceivedLocation == null || location.distanceTo(lastReceivedLocation)>1)
+                        pushToDatabase(location);
+                    lastReceivedLocation = location;
                 }
             }
         };
