@@ -39,6 +39,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
 import com.ece.triplea.R;
 import com.ece.triplea.model.Child;
 
@@ -239,7 +240,6 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
                 String childName = jsonObject.getString("child_name");
                 String childPhone = jsonObject.getString("child_phone");
                 mChildren.add(new Child(childId, childName, childPhone));
-
             }
             mAdapter.notifyDataSetChanged();
             viewFlipper.setDisplayedChild(PAGE_LIST);
@@ -319,8 +319,19 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
             ImageView imgChild = view.findViewById(R.id.imgChild);
             txtChildName.setText(items.get(position).getChildName());
             txtChildPhone.setText(items.get(position).getChildPhone());
+            Glide
+                    .with(ManageChildrenActivity.this)
+                    .load(getChildImageUrl(items.get(position).getChildId()))
+                    .centerCrop()
+                    .into(imgChild);
 
             return view;
+        }
+
+        private String getChildImageUrl(long childId) {
+            return getString(R.string.base_url)
+                    + getString(R.string.ulr_child_image_get)
+                    + "?child_id=" + childId;
         }
 
         @Override
