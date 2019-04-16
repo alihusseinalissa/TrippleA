@@ -4,6 +4,7 @@
     <string name="base_url">http://ahmadsiteee-001-site1.ctempurl.com/android-backend/</string>
     <string name="ulr_location_add">LocationAdd.php</string>
     <string name="ulr_location_get_last">GetLastLocations.php</string>
+    <string name="ulr_location_get_history">GetHistoryLocations.php</string>
     <string name="ulr_children_get">ChildrenGet.php</string>
     <string name="ulr_child_image_get">GetChildImage.php</string>
 

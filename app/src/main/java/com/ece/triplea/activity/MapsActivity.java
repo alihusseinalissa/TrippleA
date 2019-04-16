@@ -4,9 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
 import android.os.Bundle;
@@ -38,11 +36,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.request.transition.Transition;
 import com.ece.triplea.R;
 import com.ece.triplea.model.MyLocation;
@@ -71,7 +65,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     RequestQueue volleyQueue;
     private long mUserId;
-    ArrayList<MyLocation> mLocations = new ArrayList<>();
+    ArrayList<MyLocation> mLatestLocations = new ArrayList<>();
+    ArrayList<MyLocation> mHistoryLocations = new ArrayList<>();
     Map<Long, MyLocation> mapLocations = new HashMap<>();
     Map<Long, Bitmap> mapBitmaps = new HashMap<>();
     MultiSelectToggleGroup childrenPanel;
@@ -133,6 +128,49 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         childrenPanel.setOnCheckedChangeListener(this);
         childrenPanel.setOnLongClickListener(this);
 
+
+        String url = getString(R.string.base_url) +
+                getString(R.string.ulr_location_get_history)
+                + "?user_id=" + mUserId;
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONArray jsonArray = (new JSONArray(response)).getJSONArray(0);
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                long locationId = jsonObject.getLong("location_id");
+                                final long childId = jsonObject.getLong("childid");
+                                final String childName = jsonObject.getString("child_name");
+                                double latitude = jsonObject.getDouble("location_lat");
+                                double longitude = jsonObject.getDouble("location_lng");
+                                String time = jsonObject.getString("location_time");
+                                final MyLocation location = new MyLocation(locationId, childId, childName, latitude, longitude, time);
+                                mHistoryLocations.add(location);
+
+                            }
+
+                            //getLatestLocation();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        // Display the first 500 characters of the response string.
+                        mAdapter = new HistoryListAdapter(mHistoryLocations);
+                        mListView.setAdapter(mAdapter);
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+//                Toast.makeText(MapsActivity.this, "error", Toast.LENGTH_SHORT).show();
+                //getLatestLocation();
+            }
+        });
+
+        volleyQueue.add(stringRequest);
+
         loadOptionsMenu();
 
         mListView = findViewById(R.id.listHistory);
@@ -163,8 +201,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 //                mMap.clear();
-//                double latitude = mLocations.get(position).getLatitude();
-//                double longitude = mLocations.get(position).getLongitude();
+//                double latitude = mLatestLocations.get(position).getLatitude();
+//                double longitude = mLatestLocations.get(position).getLongitude();
 //                LatLng point = new LatLng(latitude, longitude);
 //                mMap.addMarker(new MarkerOptions().position(point));
 //                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(point, 15));
@@ -245,18 +283,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 double latitude = jsonObject.getDouble("location_lat");
                 double longitude = jsonObject.getDouble("location_lng");
                 String time = jsonObject.getString("location_time");
-                MyLocation location = new MyLocation(locationId, childId, childName, latitude, longitude, time);
-                mLocations.add(location);
+                final MyLocation location = new MyLocation(locationId, childId, childName, latitude, longitude, time);
+                mLatestLocations.add(location);
                 mapLocations.put(childId, location);
+                mHistoryLocations.add(location);
+                if (mAdapter!=null) mAdapter.notifyDataSetChanged();
                 Glide.with(this).load(getChildImageUrl(childId)).into(new SimpleTarget<Drawable>() {
                     @Override
                     public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
                         mapBitmaps.put(childId, convertToBitmap(resource, 300, 300));
                         addButton(childId, childName);
                         updateRealTimeLocations();
-                        mAdapter = new HistoryListAdapter(mLocations);
-                        mListView.setAdapter(mAdapter);
-                        mAdapter.notifyDataSetChanged();
+
                     }
                 });
 
@@ -307,15 +345,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.clear();
         LatLng newLocation = null;
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        for (int i = 0; i < mLocations.size(); i++) {
-            long childId = mLocations.get(i).getChildId();
+        for (int i = 0; i < mLatestLocations.size(); i++) {
+            long childId = mLatestLocations.get(i).getChildId();
             if (trackedChildren.contains(childId)) {
-                double newLatitude = mLocations.get(i).getLatitude();
-                double newLongitude = mLocations.get(i).getLongitude();
+                double newLatitude = mLatestLocations.get(i).getLatitude();
+                double newLongitude = mLatestLocations.get(i).getLongitude();
                 newLocation = new LatLng(newLatitude, newLongitude);
                 MarkerOptions marker = new MarkerOptions().position(newLocation)
-                        .title(mLocations.get(i).getChildName() + "'s location" + ": " + newLatitude + ", " + newLongitude)
-                        .snippet("Recorded at: " + mLocations.get(i).getTime());
+                        .title(mLatestLocations.get(i).getChildName() + "'s location" + ": " + newLatitude + ", " + newLongitude)
+                        .snippet("Recorded at: " + mLatestLocations.get(i).getTime());
                 addMarker(marker, childId);
 
                 builder.include(marker.getPosition());
