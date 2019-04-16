@@ -44,7 +44,7 @@ public class LocationSenderService extends Service {
     private Intent mIntent;
     boolean serviceSwitch;
 
-    long mChildId;
+    long mChildId, mUserId;
 
     public LocationSenderService(Context applicationContext) {
         super();
@@ -57,6 +57,7 @@ public class LocationSenderService extends Service {
         super.onCreate();
         SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("GLOBAL", MODE_PRIVATE);
         mChildId = sharedPreferences.getLong("child_id", -1);
+        mUserId = sharedPreferences.getLong("user_id", -1);
         Intent intent = new Intent(getApplicationContext(), ChildActivity.class);
 //        Intent intent = new Intent(this, Main2Activity.class);
 //        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -242,8 +243,8 @@ public class LocationSenderService extends Service {
         if (queue == null) queue = Volley.newRequestQueue(this);
         String url = getString(R.string.base_url) +
                 getString(R.string.ulr_location_add)
-                + "?child_id=" + "1"
-                + "&family_id=" + "1"
+                + "?child_id=" + mChildId
+                + "&family_id=" + mUserId
                 + "&location_lat=" + location.getLatitude()
                 + "&location_lng=" + location.getLongitude();
 
