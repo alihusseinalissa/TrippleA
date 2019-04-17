@@ -1,30 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context=".fragment.ChooseModeFragment">
 
+    <TextView
+        android:text="For which person does this phone (or watch) belong?"
+        android:gravity="center"
+        android:layout_above="@id/modeSwitch"
+        android:layout_width="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:padding="16dp"
+        android:textSize="20sp"
+        android:layout_height="wrap_content" />
+
+    <lib.kingja.switchbutton.SwitchMultiButton
+        android:id="@+id/modeSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:layout_centerInParent="true"
+        app:selectedColor="@color/colorAccent"
+        app:selectedTab="-1"
+
+        app:strokeRadius="5dp"
+        app:strokeWidth="1dp"
+
+        app:switchTabs="@array/mode_options"
+        app:textSize="24sp"
+        />
 
 
-    <Button
-        android:layout_weight="1"
-        android:id="@+id/buChild"
-        android:textSize="24sp"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:text="I am a child" />
-
-    <Button
-        android:layout_weight="1"
-        android:id="@+id/buParent"
-        android:textSize="24sp"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:text="I am a parent" />
-
-</LinearLayout>
+</RelativeLayout>

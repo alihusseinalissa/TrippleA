@@ -12,8 +12,8 @@
         android:layout_height="wrap_content">
 
         <Switch
-            android:padding="8dp"
-            android:textSize="14sp"
+            android:padding="16dp"
+            android:textSize="20sp"
             android:id="@+id/serviceSwitch"
             android:text="Tracking"
             android:layout_width="match_parent"

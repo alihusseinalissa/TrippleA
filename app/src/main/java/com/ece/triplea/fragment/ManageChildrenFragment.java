@@ -40,6 +40,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.ece.triplea.R;
 import com.ece.triplea.activity.ChildActivity;
 import com.ece.triplea.activity.MapsActivity;
@@ -429,6 +430,8 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
                     .with(getContext())
                     .load(getChildImageUrl(items.get(position).getChildId()))
                     .centerCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
                     .into(imgChild);
 
             return view;

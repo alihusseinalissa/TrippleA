@@ -36,6 +36,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.ece.triplea.R;
@@ -287,8 +288,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mLatestLocations.add(location);
                 mapLocations.put(childId, location);
                 mHistoryLocations.add(location);
-                if (mAdapter!=null) mAdapter.notifyDataSetChanged();
-                Glide.with(this).load(getChildImageUrl(childId)).into(new SimpleTarget<Drawable>() {
+                if (mAdapter != null) mAdapter.notifyDataSetChanged();
+                Glide.with(this)
+                        .load(getChildImageUrl(childId))
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .skipMemoryCache(true)
+                        .into(new SimpleTarget<Drawable>() {
                     @Override
                     public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
                         mapBitmaps.put(childId, convertToBitmap(resource, 300, 300));
