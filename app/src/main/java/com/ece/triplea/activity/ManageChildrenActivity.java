@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.design.widget.CoordinatorLayout;
@@ -17,9 +15,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -179,7 +174,7 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
         sheetView = getLayoutInflater().inflate(R.layout.children_options, null);
         mBottomSheetDialog.setContentView(sheetView);
 
-        optionEdit = sheetView.findViewById(R.id.option_edit);
+        optionEdit = sheetView.findViewById(R.id.option_chat);
         optionDelete = sheetView.findViewById(R.id.option_delete);
 
         optionEdit.setOnClickListener(new View.OnClickListener() {

@@ -77,6 +77,9 @@
         <uses-library
             android:name="org.apache.http.legacy"
             android:required="false" />
+
+        <activity android:name=".chat.Chatroom"></activity>
+
     </application>
 
 </manifest>

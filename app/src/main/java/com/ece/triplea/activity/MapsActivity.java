@@ -40,6 +40,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.ece.triplea.R;
+import com.ece.triplea.chat.Chatroom;
 import com.ece.triplea.model.MyLocation;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -75,8 +76,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     BottomSheetDialog mBottomSheetDialog;
     View sheetView;
-    LinearLayout optionHistory, optionDelete;
+    LinearLayout optionHistory, optionChat;
     long selectedChildId = -1;
+    String selectedChildName = "";
 
     HistoryListAdapter mAdapter;
     ListView mListView;
@@ -129,7 +131,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         childrenPanel.setOnCheckedChangeListener(this);
         childrenPanel.setOnLongClickListener(this);
 
-
         String url = getString(R.string.base_url) +
                 getString(R.string.ulr_location_get_history)
                 + "?user_id=" + mUserId;
@@ -153,7 +154,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                             }
 
-                            //getLatestLocation();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -215,36 +215,41 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         btnHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CardView llBottomSheet = findViewById(R.id.bottom_sheet);
-
-// init the bottom sheet behavior
-                BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(llBottomSheet);
-
-// change the state of the bottom sheet
-                if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
-                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                } else {
-                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                }
-
-                bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-                    @Override
-                    public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                        if (newState == BottomSheetBehavior.STATE_EXPANDED) {
-                            btnHistory.setImageResource(R.drawable.ic_keyboard_arrow_down_black_32dp);
-                        } else
-                            btnHistory.setImageResource(R.drawable.ic_history_black_32dp);
-                    }
-
-                    @Override
-                    public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-
-                    }
-                });
+                showHistoryList();
             }
         });
 
 
+    }
+
+    private void showHistoryList() {
+        final ImageView btnHistory = findViewById(R.id.btnHistory);
+        CardView llBottomSheet = findViewById(R.id.bottom_sheet);
+
+// init the bottom sheet behavior
+        BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(llBottomSheet);
+
+// change the state of the bottom sheet
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        } else {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        }
+
+        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+                    btnHistory.setImageResource(R.drawable.ic_keyboard_arrow_down_black_32dp);
+                } else
+                    btnHistory.setImageResource(R.drawable.ic_history_black_32dp);
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
+            }
+        });
     }
 
     private void getLatestLocation() {
@@ -326,7 +331,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 + "?child_id=" + childId;
     }
 
-    private void addButton(long childId, String childName) {
+    private void addButton(long childId, final String childName) {
         LabelToggle button = new LabelToggle(this);
         button.setText(childName);
         button.setTag(childId);
@@ -338,8 +343,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public boolean onLongClick(View v) {
                 long childId = (long) v.getTag();
-                selectedChildId = childId;
                 mBottomSheetDialog.show();
+                selectedChildId = childId;
+                selectedChildName = childName;
                 return true;
             }
         });
@@ -477,22 +483,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mBottomSheetDialog.setContentView(sheetView);
 
         optionHistory = sheetView.findViewById(R.id.option_history);
-        //optionDelete = sheetView.findViewById(R.id.option_delete);
+        optionChat = sheetView.findViewById(R.id.option_chat);
 
         optionHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.v("clicked", String.valueOf(selectedChildId));
+                showHistoryList();
+                mBottomSheetDialog.dismiss();
             }
         });
 
-//        optionDelete.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                mBottomSheetDialog.dismiss();
-//
-//            }
-//        });
+        optionChat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String sender = Long.toString(selectedChildId);
+                String room = Long.toString(mUserId);
+                Intent intent = new Intent(MapsActivity.this, Chatroom.class);
+                intent.putExtra("Name", "Your Father");
+                intent.putExtra("chatroom",room + "-" + sender);
+                intent.putExtra("title", selectedChildName);
+                startActivity(intent);
+                mBottomSheetDialog.dismiss();
+            }
+        });
     }
 
     public class HistoryListAdapter extends BaseAdapter {

@@ -8,8 +8,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <LinearLayout
-        android:visibility="gone"
-        android:id="@+id/option_edit"
+        android:visibility="visible"
+        android:id="@+id/option_chat"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:clickable="true"
@@ -20,14 +20,14 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            app:srcCompat="@drawable/ic_edit_gray_24dp"
+            app:srcCompat="@drawable/ic_send_black_24dp"
             />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginLeft="16dp"
-            android:text="Edit"/>
+            android:text="Chat"/>
     </LinearLayout>
     <LinearLayout
         android:id="@+id/option_history"
@@ -38,11 +38,11 @@
         android:orientation="horizontal"
         android:foreground="?android:attr/selectableItemBackground"
         android:padding="16dp">
-        <!--<ImageView-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="match_parent"-->
-            <!--app:srcCompat="@drawable/ic_delete_gray_24dp"-->
-            <!--/>-->
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            app:srcCompat="@drawable/ic_history_black_32dp"
+            />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

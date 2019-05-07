@@ -48,7 +48,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:text="Ahmed Hussein &amp; Ali Hussein"
+        android:text="Ahmed Hussein &amp; Ali Salam &amp; Ali Hussein"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
