@@ -22,5 +22,30 @@
             android:layout_height="wrap_content"
             android:hint="Child Phone Number" />
 
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:text="PICK"
+                android:id="@+id/buPick"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:text="Clear"
+                android:id="@+id/buClear"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/imagePicked"
+            android:layout_gravity="center"
+            android:layout_width="200dp"
+            android:layout_height="200dp" />
+
     </LinearLayout>
 </ScrollView>

@@ -4,7 +4,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.media.ThumbnailUtils;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetDialog;
@@ -28,6 +34,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.android.volley.Request;
@@ -41,17 +48,24 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.ece.triplea.R;
 import com.ece.triplea.activity.ChildActivity;
 import com.ece.triplea.activity.MapsActivity;
+import com.ece.triplea.activity.MapsActivityNew;
 import com.ece.triplea.activity.StepperActivity;
 import com.ece.triplea.model.Child;
 import com.stepstone.stepper.BlockingStep;
 import com.stepstone.stepper.StepperLayout;
 import com.stepstone.stepper.VerificationError;
 
+import net.gotev.uploadservice.MultipartUploadRequest;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.UUID;
+
+import static android.app.Activity.RESULT_OK;
 
 public class ManageChildrenFragment extends Fragment implements Response.Listener<JSONArray>, Response.ErrorListener, AdapterView.OnItemClickListener, BlockingStep, AdapterView.OnItemLongClickListener {
 
@@ -76,6 +90,54 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
     SharedPreferences sharedPreferences;
     StepperLayout stepperLayout;
     boolean canProceed = false;
+
+    ImageView imgPicked;
+    String imagePath;
+    Uri imageUri;
+    String url = "http://ahmadsiteee-001-site1.ctempurl.com/android-backend/" + "ChildrenAdd.php";
+    private final String UPLOAD_URL = "http://ahmadsiteee-001-site1.ctempurl.com/android-backend/" + "ImageUpload.php";
+
+    public void uploadMultipart(String childName, String childPhone) {
+        String caption = "CAPTION";
+
+        //getting the actual path of the image
+        String path = getPath(imageUri);
+
+        //Uploading code
+        try {
+            String uploadId = UUID.randomUUID().toString();
+
+            //Creating a multi part request
+            new MultipartUploadRequest(getContext(), uploadId, UPLOAD_URL)
+                    .addFileToUpload(path, "image") //Adding file
+                    .addParameter("caption", caption) //Adding text parameter to the request
+                    .setMaxRetries(5)
+                    .addParameter("user_id", String.valueOf(userId))
+                    .addParameter("child_name", childName)
+                    .addParameter("child_phone", childPhone)
+                    .startUpload();
+        } catch (Exception exc) {
+            Toast.makeText(getContext(), exc.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public String getPath(Uri uri) {
+        Cursor cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
+        cursor.moveToFirst();
+        String document_id = cursor.getString(0);
+        document_id = document_id.substring(document_id.lastIndexOf(":") + 1);
+        cursor.close();
+
+        cursor = getActivity().getContentResolver().query(
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                null, MediaStore.Images.Media._ID + " = ? ", new String[]{document_id}, null);
+        cursor.moveToFirst();
+        String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+        cursor.close();
+
+        return path;
+    }
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -116,15 +178,42 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
                         mChildren.clear();
 
 
-                        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET,
-                                getString(R.string.base_url) + "ChildrenAdd.php"
-                                        + "?user_id=" + userId
-                                        + "&child_name=" + txtChildName.getText().toString()
-                                        + "&child_phone=" + txtChildPhone.getText().toString(),
-                                null,
-                                ManageChildrenFragment.this,
-                                ManageChildrenFragment.this);
-                        volleyQueue.add(request);
+                        uploadMultipart(txtChildName.getText().toString(), txtChildPhone.getText().toString());
+                        final Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                makeRequest(); //Do something after 100ms
+                            }
+                        }, 5000);
+
+
+                    }
+                });
+
+                imgPicked = dialogView.findViewById(R.id.imagePicked);
+                Button buPick = dialogView.findViewById(R.id.buPick);
+                Button buClear = dialogView.findViewById(R.id.buClear);
+                buPick.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent pickPhoto = new Intent(Intent.ACTION_PICK,
+                                MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+                        startActivityForResult(pickPhoto, 1);//one can be replaced with any action code
+
+                    }
+                });
+                buClear.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        imgPicked.setImageURI(Uri.parse(""));
+                        imagePath = "";
+//        SharedPreferences.Editor editor = sharedPreferences.edit();
+//
+//        editor.putString("User" + i + "Image", imagePath);
+//
+//        editor.commit();
+
 
                     }
                 });
@@ -270,7 +359,8 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
                 long childId = jsonObject.getLong("child_id");
                 String childName = jsonObject.getString("child_name");
                 String childPhone = jsonObject.getString("child_phone");
-                mChildren.add(new Child(childId, childName, childPhone));
+                String childImage = jsonObject.getString("child_image");
+                mChildren.add(new Child(childId, childName, childPhone, childImage));
             }
             mAdapter.notifyDataSetChanged();
             viewFlipper.setDisplayedChild(PAGE_LIST);
@@ -346,7 +436,7 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
             editor.putBoolean("init", false);
             editor.apply();
             canProceed = true;
-            Intent intent = new Intent(getActivity(), MapsActivity.class);
+            Intent intent = new Intent(getActivity(), MapsActivityNew.class);
             startActivity(intent);
         } else {
             showSnackbar("Please select a child");
@@ -425,19 +515,17 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
             txtChildPhone.setText(items.get(position).getChildPhone());
             Glide
                     .with(getContext())
-                    .load(getChildImageUrl(items.get(position).getChildId()))
+                    .load(getChildImageUrl(items.get(position).getChildImage()))
                     .centerCrop()
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .skipMemoryCache(true)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                    .skipMemoryCache(true)
                     .into(imgChild);
 
             return view;
         }
 
-        private String getChildImageUrl(long childId) {
-            return getString(R.string.base_url)
-                    + getString(R.string.ulr_child_image_get)
-                    + "?child_id=" + childId;
+        private String getChildImageUrl(String childImage) {
+            return getString(R.string.images_url) + childImage;
         }
 
         @Override
@@ -451,6 +539,33 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
 //                fab.show();
             }
         }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                Uri selectedImage = data.getData();
+                imagePath = selectedImage.toString();
+                imageUri = selectedImage;
+                Bitmap ThumbImage;
+                try {
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), selectedImage);
+                    ThumbImage = ThumbnailUtils.extractThumbnail(bitmap,
+                            300, 300);
+                    imgPicked.setImageBitmap(ThumbImage);
+                } catch (IOException e) {
+                    imgPicked.setImageURI(selectedImage);
+                    e.printStackTrace();
+                }
+
+
+            }
+        }
+
+
     }
 
 }

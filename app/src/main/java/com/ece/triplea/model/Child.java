@@ -4,10 +4,11 @@ public class Child {
     private long childId;
     private String childName, childPhone, childImage;
 
-    public Child(long childId, String childName, String childPhone) {
+    public Child(long childId, String childName, String childPhone, String childImage) {
         this.childId = childId;
         this.childName = childName;
         this.childPhone = childPhone;
+        this.childImage = childImage;
     }
 
     public long getChildId() {
