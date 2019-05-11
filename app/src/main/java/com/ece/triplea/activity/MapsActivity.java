@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
@@ -160,7 +161,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         // Display the first 500 characters of the response string.
                         mAdapter = new HistoryListAdapter(mHistoryLocations);
                         mListView.setAdapter(mAdapter);
-
+                        
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -265,6 +266,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         // Display the first 500 characters of the response string.
                         lastSuccessfulResponse = response;
                         addMarkers();
+
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -285,6 +287,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 long locationId = jsonObject.getLong("location_id");
                 final long childId = jsonObject.getLong("childid");
+                final String childImage = jsonObject.getString("child_image");
                 final String childName = jsonObject.getString("child_name");
                 double latitude = jsonObject.getDouble("location_lat");
                 double longitude = jsonObject.getDouble("location_lng");
@@ -295,7 +298,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mHistoryLocations.add(location);
                 if (mAdapter != null) mAdapter.notifyDataSetChanged();
                 Glide.with(this)
-                        .load(getChildImageUrl(childId))
+                        .load(getChildImageUrl(childImage))
                         .diskCacheStrategy(DiskCacheStrategy.NONE)
                         .skipMemoryCache(true)
                         .into(new SimpleTarget<Drawable>() {
@@ -325,10 +328,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return mutableBitmap;
     }
 
-    private String getChildImageUrl(long childId) {
-        return getString(R.string.base_url)
-                + getString(R.string.ulr_child_image_get)
-                + "?child_id=" + childId;
+    private String getChildImageUrl(String childImage) {
+        return getString(R.string.images_url) + childImage;
     }
 
     private void addButton(long childId, final String childName) {
