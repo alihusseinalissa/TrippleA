@@ -48,7 +48,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.ece.triplea.R;
 import com.ece.triplea.activity.ChildActivity;
 import com.ece.triplea.activity.MapsActivity;
-import com.ece.triplea.activity.MapsActivityNew;
 import com.ece.triplea.activity.StepperActivity;
 import com.ece.triplea.model.Child;
 import com.stepstone.stepper.BlockingStep;
@@ -436,7 +435,7 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
             editor.putBoolean("init", false);
             editor.apply();
             canProceed = true;
-            Intent intent = new Intent(getActivity(), MapsActivityNew.class);
+            Intent intent = new Intent(getActivity(), MapsActivity.class);
             startActivity(intent);
         } else {
             showSnackbar("Please select a child");

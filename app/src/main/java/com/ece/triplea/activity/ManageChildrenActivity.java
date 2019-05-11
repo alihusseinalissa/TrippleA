@@ -460,7 +460,7 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("init", false);
         editor.apply();
-        Intent intent = new Intent(this, MapsActivityNew.class);
+        Intent intent = new Intent(this, MapsActivity.class);
         startActivity(intent);
         this.finish();
     }
