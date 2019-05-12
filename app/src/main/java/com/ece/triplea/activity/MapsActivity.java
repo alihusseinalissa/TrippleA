@@ -161,7 +161,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         // Display the first 500 characters of the response string.
                         mAdapter = new HistoryListAdapter(mHistoryLocations);
                         mListView.setAdapter(mAdapter);
-                        
+
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -376,6 +376,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 350));
         } else if (trackedChildren.size() == 1 && newLocation != null)
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newLocation, 15));
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                updateRealTimeLocations();
+            }
+        }, 3000);
 
     }
 
