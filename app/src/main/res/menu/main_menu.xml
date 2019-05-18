@@ -1,7 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/menu_manage_children"
-        android:title="Manage Children"/>
-    <item android:id="@+id/menu_sign_out"
-        android:title="Sign out"/>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/option_history"
+        android:icon="@drawable/ic_history_black_32dp"
+        android:title="History"
+        app:showAsAction="always" />
+
+
+    <item
+        android:icon="@drawable/ic_location_searching_white_24dp"
+        android:title="Tracking Type"
+        app:showAsAction="ifRoom">
+        <menu>
+            <group
+                android:id="@+id/zoomType"
+                android:checkableBehavior="single">
+                <item
+                    android:id="@+id/zoomType1"
+                    android:title="Disable tracking" />
+                <item
+                    android:id="@+id/zoomType2"
+                    android:checked="true"
+                    android:title="Track all children" />
+                <item
+                    android:id="@+id/zoomType3"
+                    android:title="Track last moving child" />
+            </group>
+        </menu>
+    </item>
+
+    <item
+        android:icon="@drawable/ic_map_white_24dp"
+        android:title="Map Type"
+        app:showAsAction="ifRoom">
+        <menu>
+            <group
+                android:id="@+id/mapType"
+                android:checkableBehavior="single">
+                <item
+                    android:id="@+id/mapNormal"
+                    android:checked="true"
+                    android:title="Normal" />
+                <item
+                    android:id="@+id/mapSat"
+                    android:title="Satellite" />
+                <item
+                    android:id="@+id/mapTer"
+                    android:title="Terrain" />
+                <item
+                    android:id="@+id/mapHybrid"
+                    android:title="Hybrid" />
+                <item
+                    android:id="@+id/mapNone"
+                    android:title="None" />
+            </group>
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/zoom"
+        android:title="Auto zoom"
+        android:checkable="true"
+        android:checked="true"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_manage_children"
+        android:title="Manage Children"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_sign_out"
+        android:title="Sign out"
+        app:showAsAction="never" />
 </menu>

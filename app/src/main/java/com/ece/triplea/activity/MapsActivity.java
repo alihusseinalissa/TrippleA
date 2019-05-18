@@ -4,17 +4,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
+import android.util.ArrayMap;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,7 +24,6 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -34,7 +34,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -47,11 +47,19 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.nex3z.togglebuttongroup.MultiSelectToggleGroup;
 import com.nex3z.togglebuttongroup.button.LabelToggle;
 
@@ -66,12 +74,14 @@ import java.util.Map;
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.InfoWindowAdapter, MultiSelectToggleGroup.OnCheckedStateChangeListener, View.OnLongClickListener {
 
     private GoogleMap mMap;
+    CardView llBottomSheet;
     RequestQueue volleyQueue;
     private long mUserId;
     ArrayList<MyLocation> mLatestLocations = new ArrayList<>();
     ArrayList<MyLocation> mHistoryLocations = new ArrayList<>();
     Map<Long, MyLocation> mapLocations = new HashMap<>();
     Map<Long, Bitmap> mapBitmaps = new HashMap<>();
+    Map<Long, Marker> lastAddedMarkers = new HashMap<>();
     MultiSelectToggleGroup childrenPanel;
     ArrayList<Long> trackedChildren = new ArrayList<>();
 
@@ -85,7 +95,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     ListView mListView;
 
     String lastSuccessfulResponse = "";
+    ZoomType mZoomType = ZoomType.ALL;
 
+    Map<Long, ArrayList<Marker>> mMarkers = new HashMap<>();
+    private Map<Long, LabelToggle> mButtons = new HashMap<>();
+    private boolean mZoomEnabled = true;
+
+    enum ZoomType {
+        NONE,
+        ALL,
+        LAST
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -112,66 +132,95 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             case R.id.menu_manage_children:
                 Intent intent2 = new Intent(this, ManageChildrenActivity.class);
                 startActivity(intent2);
+                return true;
+            case R.id.mapNormal:
+                mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                item.setChecked(true);
+                return true;
+            case R.id.mapSat:
+                mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+                item.setChecked(true);
+                return true;
+            case R.id.mapTer:
+                mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+                item.setChecked(true);
+                return true;
+            case R.id.mapHybrid:
+                mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                item.setChecked(true);
+                return true;
+            case R.id.mapNone:
+                mMap.setMapType(GoogleMap.MAP_TYPE_NONE);
+                item.setChecked(true);
+                return true;
+            case R.id.zoomType1:
+                this.mZoomType = ZoomType.NONE;
+                item.setChecked(true);
+                return true;
+            case R.id.zoomType2:
+                moveCameraToBounds();
+                this.mZoomType = ZoomType.ALL;
+                item.setChecked(true);
+                return true;
+            case R.id.zoomType3:
+                // TODO: zoom to the latest location (marker)
+                this.mZoomType = ZoomType.LAST;
+                item.setChecked(true);
+                return true;
+            case R.id.zoom:
+                this.mZoomEnabled = item.isChecked();
+//                item.setChecked(!item.isChecked());
+                return true;
+            case R.id.option_history:
+                showHistoryList();
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    private void showHistoryList() {
+        //final ImageView btnHistory = (ImageView) findViewById(R.id.btnHistory);
+// init the bottom sheet behavior
+        BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(llBottomSheet);
+
+// change the state of the bottom sheet
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        } else {
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        }
+
+        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                /*
+                if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+                    btnHistory.setImageResource(R.drawable.ic_keyboard_arrow_down_black_32dp);
+                } else
+                    btnHistory.setImageResource(R.drawable.ic_history_black_32dp);
+                */
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
+            }
+        });
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
         volleyQueue = Volley.newRequestQueue(this);
         SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("GLOBAL", Context.MODE_PRIVATE);
         mUserId = sharedPreferences.getLong("user_id", -1);
         childrenPanel = findViewById(R.id.children_panel);
         childrenPanel.setOnCheckedChangeListener(this);
         childrenPanel.setOnLongClickListener(this);
-
-        String url = getString(R.string.base_url) +
-                getString(R.string.ulr_location_get_history)
-                + "?user_id=" + mUserId;
-
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        try {
-                            JSONArray jsonArray = (new JSONArray(response)).getJSONArray(0);
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                long locationId = jsonObject.getLong("location_id");
-                                final long childId = jsonObject.getLong("childid");
-                                final String childName = jsonObject.getString("child_name");
-                                double latitude = jsonObject.getDouble("location_lat");
-                                double longitude = jsonObject.getDouble("location_lng");
-                                String time = jsonObject.getString("location_time");
-                                final MyLocation location = new MyLocation(locationId, childId, childName, latitude, longitude, time);
-                                mHistoryLocations.add(location);
-
-                            }
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        // Display the first 500 characters of the response string.
-                        mAdapter = new HistoryListAdapter(mHistoryLocations);
-                        mListView.setAdapter(mAdapter);
-
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-//                Toast.makeText(MapsActivity.this, "error", Toast.LENGTH_SHORT).show();
-                //getLatestLocation();
-            }
-        });
-
-        volleyQueue.add(stringRequest);
+        llBottomSheet = findViewById(R.id.bottom_sheet);
 
         loadOptionsMenu();
 
@@ -199,124 +248,99 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                mMap.clear();
-//                double latitude = mLatestLocations.get(position).getLatitude();
-//                double longitude = mLatestLocations.get(position).getLongitude();
-//                LatLng point = new LatLng(latitude, longitude);
-//                mMap.addMarker(new MarkerOptions().position(point));
-//                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(point, 15));
-//                mBottomSheetDialog.dismiss();
-            }
-        });
-
-        final ImageView btnHistory = findViewById(R.id.btnHistory);
-        btnHistory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showHistoryList();
-            }
-        });
+        loadChildrenImages();
 
 
     }
 
-    private void showHistoryList() {
-        final ImageView btnHistory = findViewById(R.id.btnHistory);
-        CardView llBottomSheet = findViewById(R.id.bottom_sheet);
-
-// init the bottom sheet behavior
-        BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(llBottomSheet);
-
-// change the state of the bottom sheet
-        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        } else {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        }
-
-        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                if (newState == BottomSheetBehavior.STATE_EXPANDED) {
-                    btnHistory.setImageResource(R.drawable.ic_keyboard_arrow_down_black_32dp);
-                } else
-                    btnHistory.setImageResource(R.drawable.ic_history_black_32dp);
-            }
-
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-
-            }
-        });
-    }
-
-    private void getLatestLocation() {
+    private void loadChildrenImages() {
+        Log.v("MapsActivity", "Begin loading children images");
         String url = getString(R.string.base_url) +
-                getString(R.string.ulr_location_get_last)
+                getString(R.string.ulr_children_get)
                 + "?user_id=" + mUserId;
 
-        // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
+        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONArray>() {
                     @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        lastSuccessfulResponse = response;
-                        addMarkers();
+                    public void onResponse(JSONArray response) {
+                        try {
+                            JSONArray jsonArray = response.getJSONArray(0);
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                final long childId = jsonObject.getLong("child_id");
+                                String childName = jsonObject.getString("child_name");
+                                String childImage = jsonObject.getString("child_image");
+                                mMarkers.put(childId, new ArrayList<Marker>());
+                                mapBitmaps.put(childId, BitmapFactory.decodeResource(getResources(),
+                                        R.mipmap.ic_launcher));
+                                addButton(childId, childName);
+                                Glide.with(MapsActivity.this)
+                                        .load(getChildImageUrl(childImage))
+                                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                        .skipMemoryCache(true)
+                                        .into(new SimpleTarget<Drawable>() {
+                                            @Override
+                                            public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                                mapBitmaps.put(childId, convertToBitmap(resource, 300, 300));
+                                                if (mMarkers.get(childId) != null) {
+                                                    for (Marker marker : mMarkers.get(childId))
+                                                        marker.setIcon(getChildMarkerIcon(childId));
+                                                }
+                                            }
+                                        });
+                            }
+                            final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                                    .findFragmentById(R.id.map);
+                            mapFragment.getMapAsync(MapsActivity.this);
+                            Log.v("MapsActivity", "Children images loaded successfully");
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        mAdapter = new HistoryListAdapter(mHistoryLocations);
+                        mListView.setAdapter(mAdapter);
 
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-//                Toast.makeText(MapsActivity.this, "error", Toast.LENGTH_SHORT).show();
+                Log.e("MapsActivity", "Children images loading failed");
+                Log.e("MapsActivity", error.getMessage());
+
+
                 //getLatestLocation();
             }
         });
 
-        // Add the request to the RequestQueue.
-        volleyQueue.add(stringRequest);
+        volleyQueue.add(request);
+
+
     }
 
-    void addMarkers() {
-        try {
-            JSONArray jsonArray = (new JSONArray(lastSuccessfulResponse)).getJSONArray(0);
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                long locationId = jsonObject.getLong("location_id");
-                final long childId = jsonObject.getLong("childid");
-                final String childImage = jsonObject.getString("child_image");
-                final String childName = jsonObject.getString("child_name");
-                double latitude = jsonObject.getDouble("location_lat");
-                double longitude = jsonObject.getDouble("location_lng");
-                String time = jsonObject.getString("location_time");
-                final MyLocation location = new MyLocation(locationId, childId, childName, latitude, longitude, time);
-                mLatestLocations.add(location);
-                mapLocations.put(childId, location);
-                mHistoryLocations.add(location);
-                if (mAdapter != null) mAdapter.notifyDataSetChanged();
-                Glide.with(this)
-                        .load(getChildImageUrl(childImage))
-                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                        .skipMemoryCache(true)
-                        .into(new SimpleTarget<Drawable>() {
-                    @Override
-                    public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                        mapBitmaps.put(childId, convertToBitmap(resource, 300, 300));
-                        addButton(childId, childName);
-                        updateRealTimeLocations();
-
-                    }
-                });
-
+    private BitmapDescriptor getChildMarkerIcon(long childId) {
+        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View view1 = inflater.inflate(R.layout.marker_icon, null);
+        ImageView imgMarker = (ImageView) view1.findViewById(R.id.MarkerIcon);
+        //imgMarker.setImageResource(myColors.getIconColor(color));
+        ImageView imgImage = (ImageView) view1.findViewById(R.id.MarkerImage);
+        Bitmap childImage = mapBitmaps.get(childId);
+        if (childImage != null) {
+            Bitmap ThumbImage;
+            try {
+                //Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri2);
+                ThumbImage = ThumbnailUtils.extractThumbnail(childImage,
+                        300, 300);
+                imgImage.setImageBitmap(ThumbImage);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            //getLatestLocation();
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
+        Bitmap bitmap = getBitmapFromView(view1);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
+    private String getChildImageUrl(String childImage) {
+        return getString(R.string.images_url) + childImage;
     }
 
     public Bitmap convertToBitmap(Drawable drawable, int widthPixels, int heightPixels) {
@@ -328,8 +352,161 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return mutableBitmap;
     }
 
-    private String getChildImageUrl(String childImage) {
-        return getString(R.string.images_url) + childImage;
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        mMap.setInfoWindowAdapter(this);
+        getLatestFromFirebase();
+        //getLatestLocation();
+    }
+
+    private void getLatestFromFirebase() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final int[] n = {0}; //counter for received locations
+        for (final long childId : mapBitmaps.keySet()) {
+            final DocumentReference docRef = db
+                    .collection(String.valueOf(mUserId))
+                    .document(String.valueOf(childId));
+            docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                    @Nullable FirebaseFirestoreException e) {
+                    if (e != null) {
+                        Log.w("Firestore", "Listen failed.", e);
+                        return;
+                    }
+
+                    if (snapshot != null && snapshot.exists()) {
+                        n[0]++;
+                        long locationId = snapshot.getLong("locationId");
+                        String childName = snapshot.getString("childName");
+                        double lat = snapshot.getDouble("lastLat");
+                        double lng = snapshot.getDouble("lastLng");
+                        String time = snapshot.getTimestamp("time").toDate().toString();
+                        MyLocation receivedLocation = new MyLocation(locationId, childId, childName, lat, lng, time);
+                        if (mButtons.get(childId).isChecked())
+                            addMarker(receivedLocation);
+
+                        Log.d("Firestore", "Current data: " + snapshot.getData());
+                    } else {
+                        Log.d("Firestore", "Current data: null");
+                    }
+                }
+            });
+        }
+
+    }
+
+    private void getLatestFromFirebaseOnce(final long childId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final DocumentReference docRef = db
+                .collection(String.valueOf(mUserId))
+                .document(String.valueOf(childId));
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot snapshot = task.getResult();
+                    if (snapshot.exists()) {
+                        long locationId = snapshot.getLong("locationId");
+                        String childName = snapshot.getString("childName");
+                        double lat = snapshot.getDouble("lastLat");
+                        double lng = snapshot.getDouble("lastLng");
+                        String time = snapshot.getTimestamp("time").toDate().toString();
+                        MyLocation receivedLocation = new MyLocation(locationId, childId, childName, lat, lng, time);
+                        addMarker(receivedLocation);
+
+                        Log.d("Firestore", "Current data: " + snapshot.getData());
+                    }
+                } else {
+                    Log.w("Firestore", "Listen failed.");
+                }
+
+            }
+
+        });
+
+    }
+
+    private void moveCameraToBounds() {
+
+        final LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (Marker marker : lastAddedMarkers.values()) {
+            builder.include(marker.getPosition());
+        }
+        LatLngBounds bounds = builder.build();
+        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 350));
+    }
+
+    @Override
+    public void onBackPressed() {
+        BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(llBottomSheet);
+        if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        else super.onBackPressed();
+    }
+
+    private MarkerOptions addMarker(MyLocation newLocation) {
+        long childId = newLocation.getChildId();
+        double lat = newLocation.getLatitude();
+        double lng = newLocation.getLongitude();
+        LatLng point = new LatLng(lat, lng);
+        MarkerOptions marker = new MarkerOptions().position(point)
+                .title(newLocation.getChildName() + "'s location" + ": " + lat + ", " + lng)
+                .snippet("Recorded at: " + newLocation.getTime());
+        Marker addedMarker = drawMarkerOnMap(newLocation.getChildId(), marker);
+        ArrayList<Marker> markers = mMarkers.get(childId);
+        if (markers != null) {
+            markers.add(addedMarker);
+            mMarkers.put(childId, markers);
+        }
+        lastAddedMarkers.put(childId, addedMarker);
+        if (mZoomType == ZoomType.ALL) { // if option enabled for tracking ALL children at the same time
+            moveCameraToBounds();
+        } else if (mZoomType == ZoomType.LAST) {
+            if (mZoomEnabled) mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(point, 15));
+            else mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
+        }
+        return marker;
+    }
+
+    private Marker drawMarkerOnMap(long childId, MarkerOptions marker) {
+        marker.icon(getChildMarkerIcon(childId));
+        return mMap.addMarker(marker);
+    }
+
+    public static Bitmap getBitmapFromView(View view) {
+        view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(),
+                Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+        view.draw(canvas);
+        return bitmap;
+    }
+
+
+    @Override
+    public void onCheckedStateChanged(MultiSelectToggleGroup group, int checkedId, boolean isChecked) {
+        LabelToggle button = group.findViewById(checkedId);
+        long childId = (long) button.getTag();
+        if (isChecked) {
+            //trackedChildren.add(childId);
+            getLatestFromFirebaseOnce(childId);
+        } else {
+            //trackedChildren.remove(childId);
+            try {
+                for (Marker marker :
+                        mMarkers.get(childId)) {
+                    marker.remove();
+                }
+                //lastAddedMarkers.get(childId).remove();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        // remove marker from markers map
+        Log.e("tag: " + button.getTag().toString(), "name: " + button.getText().toString() + ", " + "checked: " + isChecked);
     }
 
     private void addButton(long childId, final String childName) {
@@ -351,140 +528,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
         childrenPanel.addView(button, lp);
+        mButtons.put(childId, button);
     }
 
-    private void updateRealTimeLocations() {
-        mMap.clear();
-        LatLng newLocation = null;
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        for (int i = 0; i < mLatestLocations.size(); i++) {
-            long childId = mLatestLocations.get(i).getChildId();
-            if (trackedChildren.contains(childId)) {
-                double newLatitude = mLatestLocations.get(i).getLatitude();
-                double newLongitude = mLatestLocations.get(i).getLongitude();
-                newLocation = new LatLng(newLatitude, newLongitude);
-                MarkerOptions marker = new MarkerOptions().position(newLocation)
-                        .title(mLatestLocations.get(i).getChildName() + "'s location" + ": " + newLatitude + ", " + newLongitude)
-                        .snippet("Recorded at: " + mLatestLocations.get(i).getTime());
-                addMarker(marker, childId);
-
-                builder.include(marker.getPosition());
-            }
-        }
-        if (trackedChildren.size() > 1) {
-            LatLngBounds bounds = builder.build();
-            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 350));
-        } else if (trackedChildren.size() == 1 && newLocation != null)
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newLocation, 15));
-
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                updateRealTimeLocations();
-            }
-        }, 3000);
-
-    }
-
-    private void addMarker(MarkerOptions marker, long childId) {
-        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-        View view1 = inflater.inflate(R.layout.marker_icon, null);
-
-        ImageView imgMarker = (ImageView) view1.findViewById(R.id.MarkerIcon);
-        //imgMarker.setImageResource(myColors.getIconColor(color));
-
-        ImageView imgImage = (ImageView) view1.findViewById(R.id.MarkerImage);
-
-        Bitmap childImage = mapBitmaps.get(childId);
-
-        if (childImage != null) {
-
-            Bitmap ThumbImage;
-            try {
-                //Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri2);
-                ThumbImage = ThumbnailUtils.extractThumbnail(childImage,
-                        300, 300);
-                imgImage.setImageBitmap(ThumbImage);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-        }
-
-        Bitmap bitmap = getBitmapFromView(view1);
-        marker.icon(BitmapDescriptorFactory.fromBitmap(bitmap));
-        mMap.addMarker(marker).showInfoWindow();
-    }
-
-    public static Bitmap getBitmapFromView(View view) {
-        view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(),
-                Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
-        view.draw(canvas);
-        return bitmap;
-    }
-
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        mMap.setInfoWindowAdapter(this);
-        getLatestLocation();
-    }
-
-    @Override
-    public View getInfoWindow(Marker marker) {
-//        return null;
-        View view = getLayoutInflater().inflate(R.layout.marker_info_window, null);
-        TextView tv1 = (TextView) view.findViewById(R.id.txtInfo1);
-        TextView tv2 = (TextView) view.findViewById(R.id.txtInfo2);
-
-        tv1.setText(marker.getTitle());
-        tv2.setText(marker.getSnippet());
-
-
-        return view;
-    }
-
-    @Override
-    public View getInfoContents(Marker marker) {
-        return null;
-    }
-
-    @Override
-    public void onCheckedStateChanged(MultiSelectToggleGroup group, int checkedId, boolean isChecked) {
-        LabelToggle button = group.findViewById(checkedId);
-        long childId = (long) button.getTag();
-        if (isChecked) {
-            trackedChildren.add(childId);
-        } else {
-            trackedChildren.remove(childId);
-        }
-        updateRealTimeLocations();
-        Log.e("tag: " + button.getTag().toString(), "name: " + button.getText().toString() + ", " + "checked: " + isChecked);
-    }
-
-    @Override
-    public boolean onLongClick(View v) {
-        long childId = (long) v.getTag();
-        selectedChildId = childId;
-        mBottomSheetDialog.show();
-        return false;
-    }
 
     private void loadOptionsMenu() {
         mBottomSheetDialog = new BottomSheetDialog(this);
@@ -509,13 +555,39 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 String room = Long.toString(mUserId);
                 Intent intent = new Intent(MapsActivity.this, Chatroom.class);
                 intent.putExtra("Name", "Your Father");
-                intent.putExtra("chatroom",room + "-" + sender);
+                intent.putExtra("chatroom", room + "-" + sender);
                 intent.putExtra("title", selectedChildName);
                 startActivity(intent);
                 mBottomSheetDialog.dismiss();
             }
         });
     }
+
+    @Override
+    public boolean onLongClick(View v) {
+        return false;
+    }
+
+    @Override
+    public View getInfoWindow(Marker marker) {
+//        return null;
+        View view = getLayoutInflater().inflate(R.layout.marker_info_window, null);
+        TextView tv1 = (TextView) view.findViewById(R.id.txtInfo1);
+        TextView tv2 = (TextView) view.findViewById(R.id.txtInfo2);
+
+        tv1.setText(marker.getTitle());
+        tv2.setText(marker.getSnippet());
+
+
+        return view;
+    }
+
+
+    @Override
+    public View getInfoContents(Marker marker) {
+        return null;
+    }
+
 
     public class HistoryListAdapter extends BaseAdapter {
 

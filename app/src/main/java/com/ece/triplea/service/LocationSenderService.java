@@ -211,7 +211,7 @@ public class LocationSenderService extends Service {
                         .addOnSuccessListener((ChildActivity)mContext, new OnSuccessListener<MyLocation>() {
                             @Override
                             public void onSuccess(MyLocation location) {
-                                // Got last known location. In some rare situations this can be null.
+                                // Got LAST known location. In some rare situations this can be null.
                                 if (location != null) {
                                     // Logic to handle location object
                                     //tv.setText(location.getLatitude() + ", " + location.getLongitude());
