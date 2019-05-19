@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
     android:layout_height="340dp"
     android:background="@android:color/darker_gray"
     android:orientation="vertical"
-    app:cardElevation="8dp"
     app:behavior_hideable="true"
     app:behavior_peekHeight="52dp"
+    app:cardElevation="8dp"
     app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
         <android.support.v7.widget.CardView
-            app:cardElevation="4dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#ddffffff">
+            android:background="#ddffffff"
+            app:cardElevation="4dp">
 
             <com.nex3z.togglebuttongroup.MultiSelectToggleGroup
                 android:id="@+id/children_panel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
                 android:layout_gravity="center_vertical"
+                android:layout_margin="8dp"
                 app:tbgChildSpacing="8dp"
                 app:tbgChildSpacingForLastRow="align"
                 app:tbgFlow="true"
@@ -35,10 +35,32 @@
 
         </android.support.v7.widget.CardView>
 
-        <ListView
-            android:id="@+id/listHistory"
+        <ViewFlipper
+            android:id="@+id/flipper"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent">
+
+            <ListView
+                android:id="@+id/listHistory"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <Button
+                android:id="@+id/btnHistoryTryAgain"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="?selectableItemBackground"
+                android:gravity="center"
+                android:text="Error\nclick to try again" />
+            <ProgressBar
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </ViewFlipper>
+
+
     </LinearLayout>
 
 

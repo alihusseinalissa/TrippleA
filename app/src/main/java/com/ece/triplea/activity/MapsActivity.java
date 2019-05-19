@@ -24,17 +24,22 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.ViewFlipper;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -84,6 +89,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     Map<Long, Marker> lastAddedMarkers = new HashMap<>();
     MultiSelectToggleGroup childrenPanel;
     ArrayList<Long> trackedChildren = new ArrayList<>();
+    ViewFlipper viewFlipper;
+    Button btnHistoryTryAgain;
+    private final static int flipperList = 0;
+    private final static int flipperError = 1;
+    private final static int flipperWait = 2;
 
     BottomSheetDialog mBottomSheetDialog;
     View sheetView;
@@ -100,6 +110,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     Map<Long, ArrayList<Marker>> mMarkers = new HashMap<>();
     private Map<Long, LabelToggle> mButtons = new HashMap<>();
     private boolean mZoomEnabled = true;
+    private Marker lastHistoryMarker;
 
     enum ZoomType {
         NONE,
@@ -193,12 +204,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                /*
+
                 if (newState == BottomSheetBehavior.STATE_EXPANDED) {
-                    btnHistory.setImageResource(R.drawable.ic_keyboard_arrow_down_black_32dp);
+
                 } else
-                    btnHistory.setImageResource(R.drawable.ic_history_black_32dp);
-                */
+                    if (lastHistoryMarker != null)
+                        lastHistoryMarker.remove();
+
             }
 
             @Override
@@ -221,6 +233,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         childrenPanel.setOnCheckedChangeListener(this);
         childrenPanel.setOnLongClickListener(this);
         llBottomSheet = findViewById(R.id.bottom_sheet);
+        viewFlipper = findViewById(R.id.flipper);
+        btnHistoryTryAgain = findViewById(R.id.btnHistoryTryAgain);
+        btnHistoryTryAgain.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getHistory();
+            }
+        });
+
 
         loadOptionsMenu();
 
@@ -245,6 +266,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 // Handle ListView touch events.
                 v.onTouchEvent(event);
                 return true;
+            }
+        });
+
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //mMap.clear();
+                if (lastHistoryMarker != null)
+                    lastHistoryMarker.remove();
+                MyLocation location = mHistoryLocations.get(position);
+                lastHistoryMarker = addMarker(location);
+                lastHistoryMarker.showInfoWindow();
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(lastHistoryMarker.getPosition()));
+                BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(llBottomSheet);
+                if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
             }
         });
 
@@ -297,8 +334,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        mAdapter = new HistoryListAdapter(mHistoryLocations);
-                        mListView.setAdapter(mAdapter);
+//                        mAdapter = new HistoryListAdapter(mHistoryLocations);
+//                        mListView.setAdapter(mAdapter);
 
                     }
                 }, new Response.ErrorListener() {
@@ -339,6 +376,52 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
+    private void getHistory(){
+        viewFlipper.setDisplayedChild(flipperWait);
+        String url = getString(R.string.base_url) +
+                getString(R.string.ulr_location_get_history)
+                + "?user_id=" + mUserId;
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONArray jsonArray = (new JSONArray(response)).getJSONArray(0);
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                long locationId = jsonObject.getLong("location_id");
+                                final long childId = jsonObject.getLong("childid");
+                                final String childName = jsonObject.getString("child_name");
+                                double latitude = jsonObject.getDouble("location_lat");
+                                double longitude = jsonObject.getDouble("location_lng");
+                                String time = jsonObject.getString("location_time");
+                                final MyLocation location = new MyLocation(locationId, childId, childName, latitude, longitude, time);
+                                mHistoryLocations.add(location);
+
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        // Display the first 500 characters of the response string.
+                        mAdapter = new HistoryListAdapter(mHistoryLocations);
+                        mListView.setAdapter(mAdapter);
+                        viewFlipper.setDisplayedChild(flipperList);
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+//                Toast.makeText(MapsActivity.this, "error", Toast.LENGTH_SHORT).show();
+                viewFlipper.setDisplayedChild(flipperError);
+            }
+        });
+
+        volleyQueue.add(stringRequest);
+
+    }
+
     private String getChildImageUrl(String childImage) {
         return getString(R.string.images_url) + childImage;
     }
@@ -357,6 +440,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap = googleMap;
         mMap.setInfoWindowAdapter(this);
         getLatestFromFirebase();
+        getHistory();
         //getLatestLocation();
     }
 
@@ -446,7 +530,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         else super.onBackPressed();
     }
 
-    private MarkerOptions addMarker(MyLocation newLocation) {
+    private Marker addMarker(MyLocation newLocation) {
         long childId = newLocation.getChildId();
         double lat = newLocation.getLatitude();
         double lng = newLocation.getLongitude();
@@ -467,7 +551,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (mZoomEnabled) mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(point, 15));
             else mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
         }
-        return marker;
+        return addedMarker;
     }
 
     private Marker drawMarkerOnMap(long childId, MarkerOptions marker) {
@@ -630,13 +714,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void notifyDataSetChanged() {
             super.notifyDataSetChanged();
-//            if (mChildren.size()<=0) {
-//                viewFlipper.setDisplayedChild(PAGE_NO_CHILDREN);
-//                fab.show();
-//            } else {
-//                viewFlipper.setDisplayedChild(PAGE_LIST);
-//                fab.show();
-//            }
         }
     }
 
