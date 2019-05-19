@@ -109,7 +109,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     Map<Long, ArrayList<Marker>> mMarkers = new HashMap<>();
     private Map<Long, LabelToggle> mButtons = new HashMap<>();
-    private boolean mZoomEnabled = true;
+    //    private boolean mZoomEnabled = true;
     private Marker lastHistoryMarker;
 
     enum ZoomType {
@@ -178,10 +178,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 this.mZoomType = ZoomType.LAST;
                 item.setChecked(true);
                 return true;
-            case R.id.zoom:
-                this.mZoomEnabled = item.isChecked();
-//                item.setChecked(!item.isChecked());
-                return true;
+//            case R.id.zoom:
+//                this.mZoomEnabled = item.isChecked();
+////                item.setChecked(!item.isChecked());
+//                return true;
             case R.id.option_history:
                 showHistoryList();
             default:
@@ -205,12 +205,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
 
-                if (newState == BottomSheetBehavior.STATE_EXPANDED) {
-
-                } else
+                if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
                     if (lastHistoryMarker != null)
                         lastHistoryMarker.remove();
-
+                }
             }
 
             @Override
@@ -376,7 +374,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
-    private void getHistory(){
+    private void getHistory() {
         viewFlipper.setDisplayedChild(flipperWait);
         String url = getString(R.string.base_url) +
                 getString(R.string.ulr_location_get_history)
@@ -439,6 +437,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setInfoWindowAdapter(this);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(33, 44), 15));
         getLatestFromFirebase();
         getHistory();
         //getLatestLocation();
@@ -548,8 +547,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (mZoomType == ZoomType.ALL) { // if option enabled for tracking ALL children at the same time
             moveCameraToBounds();
         } else if (mZoomType == ZoomType.LAST) {
-            if (mZoomEnabled) mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(point, 15));
-            else mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
         }
         return addedMarker;
     }

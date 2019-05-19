@@ -59,12 +59,12 @@
         </menu>
     </item>
 
-    <item
-        android:id="@+id/zoom"
-        android:title="Auto zoom"
-        android:checkable="true"
-        android:checked="true"
-        app:showAsAction="never" />
+    <!--<item-->
+        <!--android:id="@+id/zoom"-->
+        <!--android:title="Auto zoom"-->
+        <!--android:checkable="true"-->
+        <!--android:checked="true"-->
+        <!--app:showAsAction="never" />-->
 
     <item
         android:id="@+id/menu_manage_children"
