@@ -22,16 +22,21 @@
             android:background="#ddffffff"
             app:cardElevation="4dp">
 
-            <com.nex3z.togglebuttongroup.MultiSelectToggleGroup
-                android:id="@+id/children_panel"
+            <HorizontalScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_margin="8dp"
-                app:tbgChildSpacing="8dp"
-                app:tbgChildSpacingForLastRow="align"
-                app:tbgFlow="true"
-                app:tbgRowSpacing="8dp" />
+                android:layout_height="wrap_content">
+
+                <com.nex3z.togglebuttongroup.MultiSelectToggleGroup
+                    android:id="@+id/children_panel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="8dp"
+                    app:tbgChildSpacing="8dp"
+                    app:tbgChildSpacingForLastRow="align"
+                    app:tbgFlow="true"
+                    app:tbgRowSpacing="8dp" />
+            </HorizontalScrollView>
 
         </android.support.v7.widget.CardView>
 
