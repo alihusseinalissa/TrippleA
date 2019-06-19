@@ -276,7 +276,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 MyLocation location = mHistoryLocations.get(position);
                 lastHistoryMarker = addMarker(location);
                 lastHistoryMarker.showInfoWindow();
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(lastHistoryMarker.getPosition()));
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(lastHistoryMarker.getPosition()));
                 BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(llBottomSheet);
                 if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
@@ -437,7 +437,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setInfoWindowAdapter(this);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(33, 44), 15));
+        //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(33, 44), 10));
         getLatestFromFirebase();
         getHistory();
         //getLatestLocation();
@@ -518,7 +518,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             builder.include(marker.getPosition());
         }
         LatLngBounds bounds = builder.build();
-        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 350));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 350));
     }
 
     @Override
@@ -539,6 +539,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .snippet("Recorded at: " + newLocation.getTime());
         Marker addedMarker = drawMarkerOnMap(newLocation.getChildId(), marker);
         ArrayList<Marker> markers = mMarkers.get(childId);
+        if (true && markers != null && lastAddedMarkers.get(childId) != null) {
+            markers.remove(lastAddedMarkers.get(childId));
+            lastAddedMarkers.get(childId).remove();
+        }
         if (markers != null) {
             markers.add(addedMarker);
             mMarkers.put(childId, markers);
@@ -547,7 +551,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (mZoomType == ZoomType.ALL) { // if option enabled for tracking ALL children at the same time
             moveCameraToBounds();
         } else if (mZoomType == ZoomType.LAST) {
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(point));
         }
         return addedMarker;
     }
