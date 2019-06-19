@@ -6,10 +6,11 @@
     android:layout_height="match_parent"
     tools:context=".activity.ChildActivity">
 
-    <RelativeLayout
+    <LinearLayout
         android:background="#dedede"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <Switch
             android:padding="8dp"
@@ -18,8 +19,14 @@
             android:text="Tracking"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+        <Button
+            android:id="@+id/childChat"
+            android:text="chat with your parent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-    </RelativeLayout>
+
+    </LinearLayout>
 
 
     <!--<Switch-->

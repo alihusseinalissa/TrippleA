@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "870061543307",
+    "firebase_url": "https://tripplea-221213.firebaseio.com",
+    "project_id": "tripplea-221213",
+    "storage_bucket": "tripplea-221213.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:870061543307:android:c47895c5f84adba0",
+        "android_client_info": {
+          "package_name": "com.ece.tripplea"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "870061543307-0mnv1vef08kkngoaikt0350qe21275va.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ece.tripplea",
+            "certificate_hash": "bd0103e19feccf96a192301accc1687b659a7b48"
+          }
+        },
+        {
+          "client_id": "870061543307-9efcrmj718le83d09gl0njgjofdntgfo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9iZmF30Q75ET5lgx5dbL3HHCGfiCwEPc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "870061543307-9efcrmj718le83d09gl0njgjofdntgfo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
