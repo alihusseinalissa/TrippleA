@@ -79,6 +79,7 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
     View sheetView;
     LinearLayout optionEdit, optionDelete;
     long selectedChildId = -1;
+    String selectedChildName = "";
     long userId = -1;
     boolean init;
     String mode;
@@ -93,8 +94,8 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
     ImageView imgPicked;
     String imagePath;
     Uri imageUri;
-    String url = "http://ahmadsiteee-001-site1.ctempurl.com/android-backend/" + "ChildrenAdd.php";
-    private final String UPLOAD_URL = "http://ahmadsiteee-001-site1.ctempurl.com/android-backend/" + "ImageUpload.php";
+//    String url = getString(R.string.base_url) + "ChildrenAdd.php";
+    private String UPLOAD_URL;
 
     public void uploadMultipart(String childName, String childPhone) {
         String caption = "CAPTION";
@@ -228,6 +229,7 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        UPLOAD_URL = getString(R.string.base_url) + "ImageUpload.php";
         mChildren = new ArrayList<>();
         sharedPreferences = getActivity().getApplicationContext().getSharedPreferences("GLOBAL", Context.MODE_PRIVATE);
         userId = sharedPreferences.getLong("user_id", -1);
@@ -392,6 +394,7 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, final long id) {
         selectedChildId = id;
+        selectedChildName = mChildren.get(position).getChildName();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Confirmation");
@@ -404,6 +407,7 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
                 SharedPreferences sharedPreferences = getContext().getApplicationContext().getSharedPreferences("GLOBAL", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putLong("child_id", (int) id);
+                editor.putString("child_name", selectedChildName);
                 editor.putBoolean("init", false);
                 editor.apply();
                 canProceed = true;

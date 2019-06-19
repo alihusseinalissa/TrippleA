@@ -107,8 +107,8 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
     ImageView imgPicked;
     String imagePath;
     Uri imageUri;
-    String url = "http://ahmadsiteee-001-site1.ctempurl.com/android-backend/" + "ChildrenAdd.php";
-    private final String UPLOAD_URL = "http://ahmadsiteee-001-site1.ctempurl.com/android-backend/" + "ImageUpload.php";
+    //String url = getString(R.string.base_url) + "ChildrenAdd.php";
+    private String UPLOAD_URL;
 
     public void uploadMultipart(String childName, String childPhone) {
         String caption = "CAPTION";
@@ -158,7 +158,7 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
+        UPLOAD_URL = getString(R.string.base_url) + "ImageUpload.php";
         SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("GLOBAL", Context.MODE_PRIVATE);
         userId = sharedPreferences.getLong("user_id", -1);
         initMode = sharedPreferences.getBoolean("init", true);

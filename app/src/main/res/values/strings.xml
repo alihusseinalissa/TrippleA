@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">TripleA</string>
     <string name="title_activity_maps">Map</string>
-    <string name="images_url">http://ahmadsiteee-001-site1.ctempurl.com/</string>
-    <string name="base_url">http://ahmadsiteee-001-site1.ctempurl.com/android-backend/</string>
+    <string name="images_url">http://ahmadaa-001-site1.atempurl.com/</string>
+    <string name="base_url">http://ahmadaa-001-site1.atempurl.com/android-backend/</string>
     <string name="ulr_location_add">LocationAdd.php</string>
     <string name="ulr_location_get_last">GetLastLocations.php</string>
     <string name="ulr_location_get_history">GetHistoryLocations.php</string>

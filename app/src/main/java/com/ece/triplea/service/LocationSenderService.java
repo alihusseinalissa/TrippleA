@@ -9,13 +9,18 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.ece.triplea.receiver.LocationSenderBroadcastReceiver;
@@ -28,7 +33,18 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.SettingsClient;
+import com.google.firebase.database.ServerValue;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firestore.v1.DocumentTransform;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -45,6 +61,7 @@ public class LocationSenderService extends Service {
     boolean serviceSwitch;
 
     long mChildId, mUserId;
+    String mChildName;
 
     Location lastReceivedLocation;
 
@@ -59,6 +76,7 @@ public class LocationSenderService extends Service {
         super.onCreate();
         SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("GLOBAL", MODE_PRIVATE);
         mChildId = sharedPreferences.getLong("child_id", -1);
+        mChildName = sharedPreferences.getString("child_name", "");
         mUserId = sharedPreferences.getLong("user_id", -1);
         Intent intent = new Intent(getApplicationContext(), ChildActivity.class);
 //        Intent intent = new Intent(this, Main2Activity.class);
@@ -182,6 +200,7 @@ public class LocationSenderService extends Service {
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(2000);
+        mLocationRequest.setSmallestDisplacement(1);
         mLocationRequest.setFastestInterval(1000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
@@ -243,7 +262,7 @@ public class LocationSenderService extends Service {
 */
     }
 
-    private void pushToDatabase(Location location) {
+    private void pushToDatabase(final Location location) {
         if (queue == null) queue = Volley.newRequestQueue(this);
         String url = getString(R.string.base_url) +
                 getString(R.string.ulr_location_add)
@@ -253,12 +272,43 @@ public class LocationSenderService extends Service {
                 + "&location_lng=" + location.getLongitude();
 
         // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
-                new Response.Listener<String>() {
+        JsonArrayRequest stringRequest = new JsonArrayRequest(Request.Method.POST, url, null,
+                new Response.Listener<JSONArray>() {
                     @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
+                    public void onResponse(JSONArray response) {
                         Log.v("onResponse", "\n" + "Response is: "+ response);
+                        try {
+                            JSONObject jsonObject = response.getJSONObject(0);
+                            boolean error = jsonObject.getBoolean("error");
+                            if (!error) {
+                                long locationId = jsonObject.getLong("id");
+                                String msg = jsonObject.getString("msg");
+                                if (locationId < 0); //showSnackbar(msg);
+                                else {
+//                                    showSnackbar(msg);
+                                    FirebaseFirestore db = FirebaseFirestore.getInstance();
+                                    final DocumentReference docRef = db
+                                            .collection(String.valueOf(mUserId))
+                                            .document(String.valueOf(mChildId));
+                                    Map<String, Object> newLocation = new HashMap<>();
+                                    newLocation.put("childName", mChildName);
+                                    newLocation.put("lastLat", location.getLatitude());
+                                    newLocation.put("lastLng", location.getLongitude());
+                                    newLocation.put("locationId", locationId);
+                                    newLocation.put("time", FieldValue.serverTimestamp());
+                                    docRef.set(newLocation);
+//                                    setLoading(false);
+                                }
+                            } else {
+//                                showSnackbar("Cannot create account! try another username or phone number.");
+//                                setLoading(false);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+//                            showSnackbar("Error! " + e.getMessage());
+//                            setLoading(false);
+                        }
+
                         //changeState(STATE_TRACKING);
                     }
                 }, new Response.ErrorListener() {
@@ -273,6 +323,7 @@ public class LocationSenderService extends Service {
 
         queue.add(stringRequest);
     }
+
 
 
 }
