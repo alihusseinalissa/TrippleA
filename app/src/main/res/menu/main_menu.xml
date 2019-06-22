@@ -4,12 +4,18 @@
 
     <item
         android:id="@+id/option_history"
-        android:icon="@drawable/ic_history_black_32dp"
+        android:icon="@drawable/ic_history_white_32dp"
         android:title="History"
         app:showAsAction="always" />
 
+    <item
+        android:id="@+id/option_chat"
+        android:icon="@drawable/ic_chat_white_24dp"
+        android:title="Chat With Parent"
+        app:showAsAction="always" />
 
     <item
+        android:id="@+id/menu_tracking_type"
         android:icon="@drawable/ic_location_searching_white_24dp"
         android:title="Tracking Type"
         app:showAsAction="ifRoom">
@@ -32,6 +38,7 @@
     </item>
 
     <item
+        android:id="@+id/menu_map_type"
         android:icon="@drawable/ic_map_white_24dp"
         android:title="Map Type"
         app:showAsAction="ifRoom">

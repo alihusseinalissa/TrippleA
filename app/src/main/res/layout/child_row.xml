@@ -1,35 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:orientation="vertical">
 
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/imgChild"
-        android:layout_margin="16dp"
-        android:src="@mipmap/ic_launcher"
         android:layout_width="75dp"
-        android:layout_height="75dp" />
+        android:layout_height="75dp"
+        android:layout_margin="8dp"
+        android:src="@mipmap/ic_launcher" />
 
-    <LinearLayout
-        android:layout_gravity="center"
-        android:orientation="vertical"
+    <TextView
+        android:id="@+id/txtChildName"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:fontFamily="sans-serif-light"
+        android:lines="1"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
+        android:text="Child Name"
+        android:textColor="@color/white"
+        android:textSize="26sp" />
 
-        <TextView
-            android:id="@+id/txtChildName"
-            android:textSize="26sp"
-            android:text="Child Name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:id="@+id/txtChildPhone"
-            android:text="Child Phone"
-            android:textSize="20sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-    </LinearLayout>
+    <TextView
+        android:id="@+id/txtChildPhone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="sans-serif-light"
+        android:lines="1"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
+        android:text="Child Phone"
+        android:textColor="@color/white"
+        android:textSize="16sp" />
 
 </LinearLayout>

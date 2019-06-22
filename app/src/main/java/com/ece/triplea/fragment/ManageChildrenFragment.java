@@ -19,6 +19,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -30,6 +31,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -69,9 +71,10 @@ import static android.app.Activity.RESULT_OK;
 public class ManageChildrenFragment extends Fragment implements Response.Listener<JSONArray>, Response.ErrorListener, AdapterView.OnItemClickListener, BlockingStep, AdapterView.OnItemLongClickListener {
 
     ArrayList<Child> mChildren;
-    ListView mListView;
+    GridView mListView;
     ChildrenListAdapter mAdapter;
     TextView txtNoChildren;
+    TextView txtTitle;
     ViewFlipper viewFlipper;
     RequestQueue volleyQueue;
     FloatingActionButton fab;
@@ -90,6 +93,8 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
     SharedPreferences sharedPreferences;
     StepperLayout stepperLayout;
     boolean canProceed = false;
+
+    Toolbar toolbar;
 
     ImageView imgPicked;
     String imagePath;
@@ -249,6 +254,8 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
 
         stepperLayout = view.findViewById(R.id.stepperLayout);
 
+        toolbar = view.findViewById(R.id.toolbar);
+        txtTitle = view.findViewById(R.id.txtTitle);
 
 //        mChildren.add(new Child(0, "ali", "123"));
 //        mChildren.add(new Child(1, "ahmed", "456"));
@@ -474,7 +481,9 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
     public void onSelected() {
         init = sharedPreferences.getBoolean("init", true);
         mode = sharedPreferences.getString("mode", "undefined");
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(mode.equals("child") ? "Choose a Child" : "Manage Your Children");
+        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("");
+        txtTitle.setText(mode.equals("child") ? "Choose a Child" : "Manage Your Children");
         mListView.setOnItemClickListener(mode.equals("child") ? this : null);
     }
 

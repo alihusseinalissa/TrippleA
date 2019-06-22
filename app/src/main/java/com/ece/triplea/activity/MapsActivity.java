@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.icu.util.MeasureUnit;
 import android.media.ThumbnailUtils;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -122,6 +123,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
+        menu.findItem(R.id.option_chat).setVisible(false);
         return true;
     }
 
@@ -239,7 +241,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 getHistory();
             }
         });
-
 
         loadOptionsMenu();
 
@@ -599,6 +600,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         LabelToggle button = new LabelToggle(this);
         button.setText(childName);
         button.setTag(childId);
+        button.setMarkerColor(getResources().getColor(R.color.colorAccent));
+        button.setTextColor(getResources().getColor(R.color.white));
+        button.setTextSize(18);
         button.setChecked(true);
         ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
@@ -640,7 +644,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 String sender = Long.toString(selectedChildId);
                 String room = Long.toString(mUserId);
                 Intent intent = new Intent(MapsActivity.this, Chatroom.class);
-                intent.putExtra("Name", "Your Father");
+                intent.putExtra("mode", "parent");
+                intent.putExtra("childName", selectedChildName);
+                intent.putExtra("userName", "UserName");
                 intent.putExtra("chatroom", room + "-" + sender);
                 intent.putExtra("title", selectedChildName);
                 startActivity(intent);

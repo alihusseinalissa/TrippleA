@@ -7,30 +7,45 @@
     tools:context=".fragment.ChooseModeFragment">
 
     <TextView
-        android:text="For which person does this phone (or watch) belong?"
-        android:gravity="center"
-        android:layout_above="@id/modeSwitch"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/tv"
         android:layout_centerHorizontal="true"
+        android:fontFamily="sans-serif-light"
+        android:gravity="center"
         android:padding="16dp"
-        android:textSize="20sp"
-        android:layout_height="wrap_content" />
+        android:text="Choose Mode"
+        android:textColor="@color/white"
+        android:textSize="40sp" />
+
+    <TextView
+        android:id="@+id/tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/modeSwitch"
+        android:layout_centerHorizontal="true"
+        android:fontFamily="sans-serif-light"
+        android:gravity="center"
+        android:layout_marginBottom="16dp"
+        android:padding="16dp"
+        android:text="For which person does this phone/watch belong?"
+        android:textColor="@color/white"
+        android:textSize="20sp" />
 
     <lib.kingja.switchbutton.SwitchMultiButton
         android:id="@+id/modeSwitch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="8dp"
         android:layout_centerInParent="true"
+        android:fontFamily="sans-serif-light"
+        android:padding="8dp"
         app:selectedColor="@color/colorAccent"
+        android:background="@drawable/choose_mode_switch_background"
         app:selectedTab="-1"
-
         app:strokeRadius="5dp"
-        app:strokeWidth="1dp"
-
+        app:strokeWidth="2dp"
         app:switchTabs="@array/mode_options"
-        app:textSize="24sp"
-        />
+        app:textSize="24sp" />
 
 
 </RelativeLayout>

@@ -7,13 +7,15 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 import com.android.volley.Request;
@@ -68,8 +70,17 @@ public class LoginFragment extends Fragment implements Response.Listener<JSONArr
         viewFlipper.setOutAnimation(getContext(), R.anim.slide_down);
         txtPhoneNumber = view.findViewById(R.id.signin_phone);
         txtPassword = view.findViewById(R.id.signin_password);
-        signinProgress = view.findViewById(R.id.signin_progress);
-        signupProgress = view.findViewById(R.id.signup_progress);
+        txtPassword.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
+
+                    verifyStep();
+                }
+                return false;
+            }
+        });
+//        signinProgress = view.findViewById(R.id.signin_progress);
+//        signupProgress = view.findViewById(R.id.signup_progress);
         btnToggleLoginMethodSignIn = view.findViewById(R.id.btnToggleLoginMethodSignIn);
         btnToggleLoginMethodSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -97,10 +108,11 @@ public class LoginFragment extends Fragment implements Response.Listener<JSONArr
 
     @Override
     public void onNextClicked(StepperLayout.OnNextClickedCallback callback) {
+        callback.getStepperLayout().showProgress("Operation in progress, please wait...");
         mNextCallback = callback;
         if (createAccount)
             createAccount();
-        else login();
+        else signIn();
     }
 
     @Override
@@ -114,7 +126,7 @@ public class LoginFragment extends Fragment implements Response.Listener<JSONArr
     }
 
     public void createAccount() {
-        setLoading(true);
+        //setLoading(true);
 //                Toast.makeText(getContext(), "Create Account", Toast.LENGTH_SHORT).show();
 
         txtName = getView().findViewById(R.id.signup_name);
@@ -148,16 +160,19 @@ public class LoginFragment extends Fragment implements Response.Listener<JSONArr
                                 else {
                                     showSnackbar(msg);
                                     saveUserIdAfterCreateAccount(userId);
-                                    setLoading(false);
+                                    mNextCallback.getStepperLayout().hideProgress();
+                                    //setLoading(false);
                                 }
                             } else {
                                 showSnackbar("Cannot create account! try another username or phone number.");
-                                setLoading(false);
+                                //setLoading(false);
+                                mNextCallback.getStepperLayout().hideProgress();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
                             showSnackbar("Error! " + e.getMessage());
-                            setLoading(false);
+                            //setLoading(false);
+                            mNextCallback.getStepperLayout().hideProgress();
                         }
 
                     }
@@ -165,7 +180,8 @@ public class LoginFragment extends Fragment implements Response.Listener<JSONArr
             @Override
             public void onErrorResponse(VolleyError error) {
                 showSnackbar("Please check your internet connection!");
-                setLoading(false);
+                //setLoading(false);
+                mNextCallback.getStepperLayout().hideProgress();
             }
         });
 
@@ -193,27 +209,24 @@ public class LoginFragment extends Fragment implements Response.Listener<JSONArr
         mNextCallback.goToNextStep();
     }
 
-    private void login() {
-        setLoading(true);
+    private void signIn() {
+        //setLoading(true);
         String phone = txtPhoneNumber.getText().toString();
         String pass = txtPassword.getText().toString();
 
-        if (phone.equals("") || pass.equals("")) {
-            showSnackbar("Phone number or password can't be empty");
-            setLoading(false);
-        } else {
-            String url = getString(R.string.base_url) + "UserGetId.php?" +
-                    "phone=" + phone +
-                    "&pass=" + pass;
-            JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null, this, this);
-            mQueue.add(request);
-        }
+        String url = getString(R.string.base_url) + "UserGetId.php?" +
+                "phone=" + phone +
+                "&pass=" + pass;
+        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null, this, this);
+        mQueue.add(request);
+
 
     }
 
     @Override
     public void onResponse(JSONArray response) {
-        setLoading(false);
+//        setLoading(false);
+        mNextCallback.getStepperLayout().hideProgress();
         boolean verified = false;
         long userId = -1;
         String msg;
@@ -243,27 +256,34 @@ public class LoginFragment extends Fragment implements Response.Listener<JSONArr
 
     @Override
     public void onErrorResponse(VolleyError error) {
-        setLoading(false);
+//        setLoading(false);
         showSnackbar("Please check your internet connection!");
-
+        mNextCallback.getStepperLayout().hideProgress();
     }
 
-    void setLoading(boolean loading) {
-        if (createAccount)
-            signupProgress.setVisibility(loading ? View.VISIBLE : View.GONE);
-        else signinProgress.setVisibility(loading ? View.VISIBLE : View.GONE);
-    }
+//    void setLoading(boolean loading) {
+//        if (createAccount)
+//            signupProgress.setVisibility(loading ? View.VISIBLE : View.GONE);
+//        else signinProgress.setVisibility(loading ? View.VISIBLE : View.GONE);
+//    }
 
 
     @Nullable
     @Override
     public VerificationError verifyStep() {
+        String phone = txtPhoneNumber.getText().toString();
+        String pass = txtPassword.getText().toString();
+
+        if (phone.equals(""))
+            return new VerificationError("Phone Number must not be empty!");
+        else if (pass.equals(""))
+            return new VerificationError("Try Again!");
         return null;
     }
 
     @Override
     public void onSelected() {
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Login to Your Account");
+//        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Login to Your Account");
     }
 
     @Override

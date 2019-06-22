@@ -4,26 +4,34 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorPrimary"
     tools:context=".activity.ChildActivity">
 
     <LinearLayout
-        android:background="#dedede"
+        android:gravity="center"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:orientation="vertical"
         android:layout_height="wrap_content">
 
-        <Switch
+        <com.bitvale.switcher.SwitcherC
             android:padding="16dp"
-            android:textSize="20sp"
+            android:layout_gravity="center"
+            android:foregroundGravity="center"
             android:id="@+id/serviceSwitch"
-            android:text="Tracking"
-            android:layout_width="match_parent"
+            app:switcher_on_color="#4CAF50"
+            app:switcher_off_color="#E91E63"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
-        <Button
-            android:id="@+id/childChat"
-            android:text="chat with your parent"
-            android:layout_width="match_parent"
+        <TextView
+            android:textColor="@color/white"
+            android:layout_gravity="center"
+            android:foregroundGravity="center"
+            android:textSize="20sp"
+            android:text="Tracking"
+            android:layout_marginLeft="16dp"
+            android:fontFamily="sans-serif-light"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
     </LinearLayout>

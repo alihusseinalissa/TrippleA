@@ -11,6 +11,7 @@
         android:id="@+id/markerIcon">
 
         <ImageView
+            android:backgroundTint="@color/colorAccent"
             android:layout_height="50dp"
             android:layout_width="50dp"
             android:background="@drawable/icon"

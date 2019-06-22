@@ -88,7 +88,7 @@ public class ChooseModeFragment extends Fragment implements BlockingStep {
 
     @Override
     public void onSelected() {
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Choose Application Mode");
+//        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Choose Application Mode");
     }
 
     @Override

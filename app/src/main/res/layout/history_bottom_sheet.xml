@@ -19,12 +19,12 @@
         <android.support.v7.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#ddffffff"
             app:cardElevation="4dp">
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:background="@color/colorPrimary2">
 
                 <com.nex3z.togglebuttongroup.MultiSelectToggleGroup
                     android:id="@+id/children_panel"
@@ -43,12 +43,15 @@
         <ViewFlipper
             android:id="@+id/flipper"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="@color/colorPrimary2">
 
             <ListView
                 android:id="@+id/listHistory"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:divider="@null"
+                android:dividerHeight="0dp" />
 
             <Button
                 android:id="@+id/btnHistoryTryAgain"
@@ -58,11 +61,12 @@
                 android:background="?selectableItemBackground"
                 android:gravity="center"
                 android:text="Error\nclick to try again" />
+
             <ProgressBar
-                android:gravity="center"
-                android:layout_gravity="center"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center" />
         </ViewFlipper>
 
 

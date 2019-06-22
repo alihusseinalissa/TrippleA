@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <ViewFlipper xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/view_flipper"
     android:layout_height="match_parent"
+    tools:showIn="@layout/activity_stepper"
     android:layout_width="match_parent">
 
     <include layout="@layout/fragment_sign_in"/>

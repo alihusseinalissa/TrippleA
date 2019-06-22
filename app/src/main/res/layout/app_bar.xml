@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/toolbar"
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
@@ -9,4 +10,4 @@
     app:layout_collapseMode="pin"
     app:layout_scrollFlags="scroll|enterAlways"
     app:theme="@style/MyToolbarTheme"
-    app:title="@string/app_name"/>
+    app:title=" " />

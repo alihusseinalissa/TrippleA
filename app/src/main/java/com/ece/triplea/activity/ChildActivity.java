@@ -27,14 +27,18 @@ import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.agrawalsuneet.loaderspack.loaders.MultipleRippleLoader;
+import com.bitvale.switcher.SwitcherC;
+import com.bitvale.switcher.SwitcherX;
 import com.ece.triplea.chat.Chatroom;
 import com.ece.triplea.service.LocationSenderService;
 import com.ece.triplea.R;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+
 public class ChildActivity extends AppCompatActivity {
 
-    Switch serviceSwitch;
-    Button chatChild ;
+    SwitcherC serviceSwitch;
     MultipleRippleLoader rippleLoader;
     ImageView errorImage;
     ViewFlipper view_flipper;
@@ -77,6 +81,7 @@ public class ChildActivity extends AppCompatActivity {
                     .show();
         }
 
+        getSupportActionBar().setTitle("");
 
         pref = getApplicationContext().getSharedPreferences("GLOBAL", MODE_PRIVATE);
         mChildId = pref.getLong("child_id", -1);
@@ -87,14 +92,13 @@ public class ChildActivity extends AppCompatActivity {
         View include2 = findViewById(R.id.uploading_error_layout);
         errorImage = include2.findViewById(R.id.error_image);
         serviceSwitch = findViewById(R.id.serviceSwitch);
-        chatChild = findViewById(R.id.childChat);
 
         ctx = this;
         mService = new LocationSenderService(getCtx());
         mServiceIntent = new Intent(getCtx(), mService.getClass());
 
         boolean running = isMyServiceRunning(mService.getClass());
-        serviceSwitch.setChecked(running);
+        serviceSwitch.setChecked(running, true);
         rippleLoader.setVisibility(running ? View.VISIBLE : View.INVISIBLE);
         broadcastReceiver = new BroadcastReceiver() {
             @Override
@@ -109,9 +113,9 @@ public class ChildActivity extends AppCompatActivity {
         registerReceiver(broadcastReceiver, intentFilter);
 
 
-        serviceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        serviceSwitch.setOnCheckedChangeListener(new Function1<Boolean, Unit>() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            public Unit invoke(Boolean isChecked) {
                 if (isChecked) {
 
                     if (!isMyServiceRunning(mService.getClass())) {
@@ -131,7 +135,7 @@ public class ChildActivity extends AppCompatActivity {
                 editor.apply();
 
                 rippleLoader.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
-
+                return null;
             }
         });
 
@@ -155,20 +159,6 @@ public class ChildActivity extends AppCompatActivity {
 //        editor.putBoolean("serviceSwitch", false);
 //        editor.commit();
 //        sendBroadcast(broadcastIntent);
-       chatChild.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View v) {
-
-               String sender = Long.toString(mChildId);
-               String room = Long.toString(mparent);
-               Intent intent = new Intent(ChildActivity.this, Chatroom.class);
-               intent.putExtra("Name", "me");
-               intent.putExtra("chatroom", room + "-" + sender);
-               intent.putExtra("title", "Your parent");
-               startActivity(intent);
-
-           }
-       });
     }
 
     @Override
@@ -176,6 +166,9 @@ public class ChildActivity extends AppCompatActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
         menu.findItem(R.id.menu_manage_children).setVisible(false);
+        menu.findItem(R.id.option_history).setVisible(false);
+        menu.findItem(R.id.menu_map_type).setVisible(false);
+        menu.findItem(R.id.menu_tracking_type).setVisible(false);
         return true;
     }
 
@@ -196,6 +189,17 @@ public class ChildActivity extends AppCompatActivity {
                 startActivity(intent);
                 this.finish();
                 return true;
+            case R.id.option_chat:
+                String room = Long.toString(mparent);
+                String sender = Long.toString(mChildId);
+                Intent intent2 = new Intent(ChildActivity.this, Chatroom.class);
+                intent2.putExtra("mode", "child");
+                intent2.putExtra("childName", "childName");
+                intent2.putExtra("userName", "UserName");
+                intent2.putExtra("chatroom", room + "-" + sender);
+                intent2.putExtra("title", "Your parent");
+                startActivity(intent2);
+
             default:
                 return super.onOptionsItemSelected(item);
         }

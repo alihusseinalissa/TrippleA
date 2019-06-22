@@ -39,6 +39,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -86,7 +87,7 @@ import java.util.UUID;
 public class ManageChildrenActivity extends AppCompatActivity implements Response.Listener<JSONArray>, Response.ErrorListener, View.OnClickListener, AdapterView.OnItemClickListener {
 
     final ArrayList<Child> mChildren = new ArrayList<>();
-    ListView mListView;
+    GridView mListView;
     ChildrenListAdapter mAdapter;
     TextView txtNoChildren;
     ViewFlipper viewFlipper;

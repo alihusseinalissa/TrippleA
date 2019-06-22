@@ -4,4 +4,11 @@
     android:id="@+id/stepperLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    app:ms_activeStepColor="@color/colorAccent"
+    android:background="@color/colorPrimary"
+    app:ms_showErrorStateEnabled="true"
+    app:ms_showErrorMessageEnabled="true"
+    app:ms_bottomNavigationBackground="@color/colorPrimary"
+    app:ms_stepperFeedbackType="tabs|content_progress|content_fade|disabled_bottom_navigation|disabled_content_interaction"
+    app:ms_stepperFeedback_contentFadeAlpha="0.5"
     app:ms_stepperType="progress_bar" />

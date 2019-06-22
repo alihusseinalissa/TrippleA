@@ -32,7 +32,10 @@ public class Chatroom extends AppCompatActivity {
     private ImageButton btn_send_msg ;
 
     private EditText input_msg ;
-    private String name ;
+    private String mMode;
+    private String mChildName;
+    private String mSenderName;
+    private String mUserName;
     private String chat_room_name ;
 
 
@@ -45,11 +48,6 @@ public class Chatroom extends AppCompatActivity {
     TextView textView ;
     private String chat_msg ,chat_user_name ;
     LinearLayoutManager llm;
-    String titleName ;
-
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,10 +71,12 @@ public class Chatroom extends AppCompatActivity {
 
 
 
-        name = getIntent().getExtras().getString("Name");
+        mMode = getIntent().getExtras().getString("mode");
+        mChildName = getIntent().getExtras().getString("childName");
+        mUserName = getIntent().getExtras().getString("userName");
         chat_room_name = getIntent().getExtras().getString("chatroom");
-        titleName = getIntent().getExtras().getString("title");
-        this.setTitle(titleName);
+        mSenderName = mMode.equals("parent") ? mChildName : "Your Parent";
+        this.setTitle("Chat with " + mSenderName);
 
         root = FirebaseDatabase.getInstance().getReference().child(chat_room_name);
 
@@ -92,7 +92,7 @@ public class Chatroom extends AppCompatActivity {
 
                 DatabaseReference message_root = root.child(temp_key);
                 Map<String, Object> map2 = new HashMap<>();
-                map2.put("name",name);
+                map2.put("name", mMode);
                 map2.put("msg", input_msg.getText().toString());
 
                 message_root.updateChildren(map2);
@@ -148,11 +148,11 @@ public class Chatroom extends AppCompatActivity {
 
 
 
-            if(chat_user_name.equals(name)){
-                msgDto = new ChatAppMsgDTO(ChatAppMsgDTO.MSG_TYPE_SENT, chat_user_name + " : " + chat_msg);
+            if(chat_user_name.equals(mMode)){
+                msgDto = new ChatAppMsgDTO(ChatAppMsgDTO.MSG_TYPE_SENT, "You: " + chat_msg);
                 myValues.add(msgDto);
             }else {
-                msgDto = new ChatAppMsgDTO(ChatAppMsgDTO.MSG_TYPE_RECEIVED, chat_user_name + " : " + chat_msg);
+                msgDto = new ChatAppMsgDTO(ChatAppMsgDTO.MSG_TYPE_RECEIVED, mSenderName + ": " + chat_msg);
                 myValues.add(msgDto);
 //                Notification.Builder mBuilder = new Notification.Builder(Chatroom.this);
 //
