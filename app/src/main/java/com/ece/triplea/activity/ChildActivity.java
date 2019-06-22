@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
@@ -26,12 +27,14 @@ import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.agrawalsuneet.loaderspack.loaders.MultipleRippleLoader;
+import com.ece.triplea.chat.Chatroom;
 import com.ece.triplea.service.LocationSenderService;
 import com.ece.triplea.R;
 
 public class ChildActivity extends AppCompatActivity {
 
     Switch serviceSwitch;
+    Button chatChild ;
     MultipleRippleLoader rippleLoader;
     ImageView errorImage;
     ViewFlipper view_flipper;
@@ -46,6 +49,7 @@ public class ChildActivity extends AppCompatActivity {
     Context ctx;
 
     long mChildId;
+    long mparent;
 
     public Context getCtx() {
         return ctx;
@@ -76,12 +80,14 @@ public class ChildActivity extends AppCompatActivity {
 
         pref = getApplicationContext().getSharedPreferences("GLOBAL", MODE_PRIVATE);
         mChildId = pref.getLong("child_id", -1);
+        mparent = pref.getLong("user_id", -1);
         view_flipper = (ViewFlipper) findViewById(R.id.view_flipper);
         View include1 = findViewById(R.id.uploading_layout);
         rippleLoader = include1.findViewById(R.id.ripple_layout);
         View include2 = findViewById(R.id.uploading_error_layout);
         errorImage = include2.findViewById(R.id.error_image);
         serviceSwitch = findViewById(R.id.serviceSwitch);
+        chatChild = findViewById(R.id.childChat);
 
         ctx = this;
         mService = new LocationSenderService(getCtx());
@@ -149,6 +155,20 @@ public class ChildActivity extends AppCompatActivity {
 //        editor.putBoolean("serviceSwitch", false);
 //        editor.commit();
 //        sendBroadcast(broadcastIntent);
+       chatChild.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View v) {
+
+               String sender = Long.toString(mChildId);
+               String room = Long.toString(mparent);
+               Intent intent = new Intent(ChildActivity.this, Chatroom.class);
+               intent.putExtra("Name", "me");
+               intent.putExtra("chatroom", room + "-" + sender);
+               intent.putExtra("title", "Your parent");
+               startActivity(intent);
+
+           }
+       });
     }
 
     @Override
