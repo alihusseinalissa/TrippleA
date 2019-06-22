@@ -152,6 +152,16 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
         return path;
     }
 
+    private void showSnackbar(String text) {
+        Snackbar.make(findViewById(android.R.id.content), text, Snackbar.LENGTH_LONG)
+                .setAction(null, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                    }
+                }).show();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -186,6 +196,20 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
                 builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        String childName = txtChildName.getText().toString();
+                        String childPhone = txtChildPhone.getText().toString();
+
+                        if (childName.equals("")){
+                            showSnackbar("Child name must not be empty");
+                            return;
+                        } else if (childPhone.equals("")) {
+                            showSnackbar("Child phone number must not be empty");
+                            return;
+                        } else if (imagePath == null || imagePath.equals("")) {
+                            showSnackbar("Sorry, you must select an image for your child");
+                            return;
+                        }
+
                         viewFlipper.setDisplayedChild(PAGE_LOADING);
                         fab.hide();
                         mChildren.clear();
@@ -202,7 +226,7 @@ public class ManageChildrenActivity extends AppCompatActivity implements Respons
 //
 //                            final String encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
 
-                        uploadMultipart(txtChildName.getText().toString(), txtChildPhone.getText().toString());
+                        uploadMultipart(childName, childPhone);
                         final Handler handler = new Handler();
                         handler.postDelayed(new Runnable() {
                             @Override
