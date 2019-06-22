@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TripleA</string>
+    <string name="app_name">MTMF</string>
     <string name="title_activity_maps">Map</string>
     <string name="images_url">http://ahmadaa-001-site1.atempurl.com/</string>
     <string name="base_url">http://ahmadaa-001-site1.atempurl.com/android-backend/</string>

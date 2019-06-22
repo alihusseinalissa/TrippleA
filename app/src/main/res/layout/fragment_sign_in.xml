@@ -22,7 +22,7 @@
                 android:layout_gravity="center"
                 android:layout_marginBottom="80dp"
                 android:fontFamily="sans-serif-light"
-                android:text="Sign in"
+                android:text="Sign In"
                 android:textColor="@color/white"
                 android:textSize="40sp" />
 

@@ -1,18 +1,17 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.ece.triplea.fragment.LoginFragment">
 
-    <RelativeLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
             android:orientation="vertical"
             android:padding="20dp">
 
@@ -57,9 +56,9 @@
                 android:orientation="horizontal">
 
                 <!--<TextView-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:text="Phone Number:" />-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="Phone Number:" />-->
 
                 <EditText
                     android:id="@+id/signup_phone"
@@ -82,9 +81,9 @@
                 android:orientation="horizontal">
 
                 <!--<TextView-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:text="Password" />-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="Password" />-->
 
                 <EditText
                     android:id="@+id/signup_password"
@@ -101,34 +100,32 @@
             </LinearLayout>
 
             <!--<LinearLayout-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:orientation="horizontal">-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:orientation="horizontal">-->
 
-                <!--<TextView-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:text="Gender" />-->
+            <!--<TextView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="Gender" />-->
 
-                <!--<RadioGroup-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content">-->
+            <!--<RadioGroup-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content">-->
 
-                    <!--<RadioButton-->
-                        <!--android:layout_width="wrap_content"-->
-                        <!--android:layout_height="wrap_content"-->
-                        <!--android:text="Male" />-->
+            <!--<RadioButton-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="Male" />-->
 
-                    <!--<RadioButton-->
-                        <!--android:layout_width="wrap_content"-->
-                        <!--android:layout_height="wrap_content"-->
-                        <!--android:text="Female" />-->
-                <!--</RadioGroup>-->
+            <!--<RadioButton-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="Female" />-->
+            <!--</RadioGroup>-->
             <!--</LinearLayout>-->
 
-        </LinearLayout>
-
-        <!--<ProgressBar-->
+            <!--<ProgressBar-->
             <!--android:id="@+id/signup_progress"-->
             <!--android:layout_width="wrap_content"-->
             <!--android:layout_height="wrap_content"-->
@@ -138,22 +135,23 @@
             <!--android:layout_marginBottom="8dp"-->
             <!--android:visibility="gone" />-->
 
-        <Button
-            android:id="@+id/btnToggleLoginMethodSignUp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginBottom="24dp"
-            android:background="?attr/selectableItemBackground"
-            android:fontFamily="sans-serif"
-            android:padding="14dp"
-            android:text="Already having account? Sign in"
-            android:textAllCaps="false"
-            android:textColor="@color/white"
-            android:textSize="14sp" />
+            <Button
+                android:id="@+id/btnToggleLoginMethodSignUp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="24dp"
+                android:background="?attr/selectableItemBackground"
+                android:fontFamily="sans-serif"
+                android:padding="16dp"
+                android:text="Already having account? Sign in"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
 
+        </LinearLayout>
 
-    </RelativeLayout>
+    </ScrollView>
 
-
-</FrameLayout>
+</RelativeLayout>
