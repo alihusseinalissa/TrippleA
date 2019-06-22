@@ -1,5 +1,6 @@
 package com.ece.triplea.fragment;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -32,6 +34,8 @@ import com.stepstone.stepper.VerificationError;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Objects;
 
 public class LoginFragment extends Fragment implements Response.Listener<JSONArray>, Response.ErrorListener, BlockingStep {
 
@@ -70,15 +74,10 @@ public class LoginFragment extends Fragment implements Response.Listener<JSONArr
         viewFlipper.setOutAnimation(getContext(), R.anim.slide_down);
         txtPhoneNumber = view.findViewById(R.id.signin_phone);
         txtPassword = view.findViewById(R.id.signin_password);
-        txtPassword.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (actionId == EditorInfo.IME_ACTION_DONE)) {
+        txtName = view.findViewById(R.id.signup_name);
+        txtPhone = view.findViewById(R.id.signup_phone);
+        txtPass = view.findViewById(R.id.signup_password);
 
-                    verifyStep();
-                }
-                return false;
-            }
-        });
 //        signinProgress = view.findViewById(R.id.signin_progress);
 //        signupProgress = view.findViewById(R.id.signup_progress);
         btnToggleLoginMethodSignIn = view.findViewById(R.id.btnToggleLoginMethodSignIn);
@@ -109,10 +108,22 @@ public class LoginFragment extends Fragment implements Response.Listener<JSONArr
     @Override
     public void onNextClicked(StepperLayout.OnNextClickedCallback callback) {
         callback.getStepperLayout().showProgress("Operation in progress, please wait...");
+        hideKeyboard(Objects.requireNonNull(getActivity()));
         mNextCallback = callback;
         if (createAccount)
             createAccount();
         else signIn();
+    }
+
+    public static void hideKeyboard(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = activity.getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(activity);
+        }
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     @Override
@@ -128,12 +139,6 @@ public class LoginFragment extends Fragment implements Response.Listener<JSONArr
     public void createAccount() {
         //setLoading(true);
 //                Toast.makeText(getContext(), "Create Account", Toast.LENGTH_SHORT).show();
-
-        txtName = getView().findViewById(R.id.signup_name);
-        txtPass = getView().findViewById(R.id.signup_password);
-//                txtEmail = getView().findViewById(R.id.signup_);
-//                        txtGender = getView().findViewById(R.id.signup_gender);
-        txtPhone = getView().findViewById(R.id.signup_phone);
 
         String name = txtName.getText().toString();
         String pass = txtPass.getText().toString();
@@ -271,14 +276,29 @@ public class LoginFragment extends Fragment implements Response.Listener<JSONArr
     @Nullable
     @Override
     public VerificationError verifyStep() {
-        String phone = txtPhoneNumber.getText().toString();
-        String pass = txtPassword.getText().toString();
+        if (createAccount) {
+            String name = txtName.getText().toString();
+            String phone = txtPhone.getText().toString();
+            String pass = txtPass.getText().toString();
 
-        if (phone.equals(""))
-            return new VerificationError("Phone Number must not be empty!");
-        else if (pass.equals(""))
-            return new VerificationError("Try Again!");
-        return null;
+            if (name.equals(""))
+                return new VerificationError("Your name must not be empty!");
+            if (phone.equals(""))
+                return new VerificationError("Phone number must not be empty!");
+            else if (pass.equals(""))
+                return new VerificationError("Password must not be empty!");
+            return null;
+        }
+        else {
+            String phone = txtPhoneNumber.getText().toString();
+            String pass = txtPassword.getText().toString();
+
+            if (phone.equals(""))
+                return new VerificationError("Phone Number must not be empty!");
+            else if (pass.equals(""))
+                return new VerificationError("Try Again!");
+            return null;
+        }
     }
 
     @Override

@@ -178,12 +178,24 @@ public class ManageChildrenFragment extends Fragment implements Response.Listene
                 builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        viewFlipper.setDisplayedChild(PAGE_LOADING);
+                        String childName = txtChildName.getText().toString();
+                        String childPhone = txtChildPhone.getText().toString();
+
+                        if (childName.equals("")){
+                            showSnackbar("Child name must not be empty");
+                            return;
+                        } else if (childPhone.equals("")) {
+                            showSnackbar("Child phone number must not be empty");
+                            return;
+                        } else if (imagePath == null || imagePath.equals("")) {
+                            showSnackbar("Sorry, you must select an image for your child");
+                            return;
+                        }
+
 //                        fab.hide();
+                        viewFlipper.setDisplayedChild(PAGE_LOADING);
                         mChildren.clear();
-
-
-                        uploadMultipart(txtChildName.getText().toString(), txtChildPhone.getText().toString());
+                        uploadMultipart(childName, childPhone);
                         final Handler handler = new Handler();
                         handler.postDelayed(new Runnable() {
                             @Override
