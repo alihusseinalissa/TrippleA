@@ -10,8 +10,9 @@ Features:
 - Track all your children at the same time (on one map).
 
 To-Do:
-- Add a version for Android Wear (to be available for Android watches).
-- Migrate to AndroidX.
+- Change the entire design to the new [Material You](https://m3.material.io/) design
+- Add a version for [Android Wear](https://wearos.google.com/) (to be available for Android watches).
+- Migrate to [AndroidX](https://developer.android.com/jetpack/androidx/migrate).
 - Select a default location for the child so that if the child go far away from this location, the app sends a push notification to the parents.
 - Embed voice calls between the child and the parent.
 
